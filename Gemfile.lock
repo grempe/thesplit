@@ -5,6 +5,8 @@ GEM
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
+    redis (3.3.0)
+    simple_uuid (0.4.0)
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -16,6 +18,8 @@ PLATFORMS
 
 DEPENDENCIES
   puma (~> 3.4)
+  redis (~> 3.3)
+  simple_uuid (~> 0.4)
   sinatra (~> 1.4)
 
 RUBY VERSION

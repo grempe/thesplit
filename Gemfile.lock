@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    blake2 (0.5.0)
     puma (3.4.0)
     rack (1.6.4)
     rack-protection (1.5.3)
@@ -17,6 +18,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  blake2 (~> 0.5)
   puma (~> 3.4)
   redis (~> 3.3)
   simple_uuid (~> 0.4)

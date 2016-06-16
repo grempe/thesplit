@@ -1,0 +1,20 @@
+{
+  "name": "zerotime",
+  "version": "1.0.0",
+  "description": "app js dependencies",
+  "main": "index.js",
+  "dependencies": {
+    "blake2s-js": "^1.2.0",
+    "tweetnacl": "^0.14.3",
+    "tweetnacl-util": "^0.13.3",
+    "vue": "^1.0.24-csp",
+    "vue-resource": "^0.7.4",
+    "vue-router": "^0.7.13"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

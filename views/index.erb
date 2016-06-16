@@ -1,1 +1,67 @@
-views/index.erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Glenn Rempe <glenn@rempe.us>"/>
+
+    <title>zerotime : end-to-end encrypted zero-knowledge secret sharing</title>
+    <link rel="stylesheet" href="/css/spectre.min.css"/>
+  </head>
+
+  <body class="container">
+    <div>
+      <div class="columns">
+        <div class="column col-12">
+          <header class="text-center">
+            <h3>zerotime</h3>
+            <em>end-to-end encrypted zero-knowledge secret sharing</em>
+          </header>
+        </div>
+      </div>
+
+      <div id="inputSecretGroup">
+        <div class="columns" v-if="!secretUrl" transition="fade">
+          <div class="column col-3"></div>
+          <div class="form-group column col-6">
+            <textarea autofocus id="inputSecretText" v-on:keyup="resetOnInputKeyup" type="text" class="form-input" v-model="secret" placeholder="We all have secrets. Send yours safely." rows="5"></textarea>
+          <div class="column col-3"></div>
+        </div>
+      </div>
+
+      <div class="columns" v-show="pendingSubmit">
+        <div class="column col-7"></div>
+        <div class="column col-1">
+          <a class="btn btn-link float-right" v-on:click="resetAll" :disabled="!secret">reset</a>
+        </div>
+        <div class="column col-1">
+          <button class="btn btn-primary float-right" v-on:click="submitSecret" :disabled="!secret">Submit</button>
+        </div>
+        <div class="column col-3"></div>
+      </div>
+
+      <div class="columns">
+        <div class="column col-12">
+          <h5 class="text-center" v-if="secretUrl">{{ secretUrl }}</h5>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column col-12">
+          <p class="text-center" v-if="expiresAt">{{ expiresAt }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/node_modules/blake2s-js/blake2s.min.js" charset="utf-8"></script>
+  <script src="/node_modules/tweetnacl/nacl-fast.min.js" charset="utf-8"></script>
+  <script src="/node_modules/tweetnacl-util/nacl-util.min.js" charset="utf-8"></script>
+  <script src="/node_modules/vue/dist/vue.js" charset="utf-8"></script>
+  <script src="/node_modules/vue-router/dist/vue-router.js" charset="utf-8"></script>
+  <script src="/node_modules/vue-resource/dist/vue-resource.js" charset="utf-8"></script>
+  <script src="/js/zerotime.js" charset="utf-8"></script>
+</body>
+
+</html>

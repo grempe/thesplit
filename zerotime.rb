@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/cross_origin'
 require 'json'
 require 'redis'
 require 'simple_uuid'
@@ -8,6 +9,10 @@ require 'blake2'
 SECRETS_EXPIRE_SECS = 172_800
 
 redis = Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+
+configure do
+  enable :cross_origin
+end
 
 before do
   content_type :json
@@ -36,10 +41,10 @@ post '/secret' do
     halt 400, { error: 'invalid json params error' }.to_json
   end
 
-  if data && data['secretNonceBytesB64'] && data['secretBoxBytesB64']
+  if data && data['nonceBytesB64'] && data['boxBytesB64']
     b2_pepper = Blake2::Key.from_string('zerotime')
-    b2_hash = Blake2.hex(data['secretNonceBytesB64'] +
-                         data['secretBoxBytesB64'], b2_pepper)
+    b2_hash = Blake2.hex(data['nonceBytesB64'] +
+                         data['boxBytesB64'], b2_pepper)
   else
     halt 400, { error: 'invalid json params error' }.to_json
   end

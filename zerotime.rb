@@ -11,6 +11,7 @@ SECRETS_EXPIRE_SECS = 86_400
 redis = Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 
 configure do
+  # CORS
   enable :cross_origin
 end
 
@@ -24,17 +25,24 @@ get '/' do
 end
 
 post '/secret' do
-  if params.nil? || params['data'].empty?
-    halt 400, { error: 'argument error : no data' }.to_json
+  if params.nil? || params['data'].nil? || params['data'].empty?
+    halt 400, { error: 'argument error : no params' }.to_json
   end
 
   begin
     data = JSON.parse(params['data'])
+    if data.nil? || data.empty? || !data.is_a?(Hash)
+      halt 400, { error: 'invalid json params, data type error' }.to_json
+    end
   rescue
-    halt 400, { error: 'invalid json params error' }.to_json
+    halt 400, { error: 'invalid json params error, parse fail' }.to_json
   end
 
-  unless data && data['boxBytesB64'] && data['boxBytesB64'].length.between?(1, 1024)
+  unless data.keys.sort == %w(blake2sHash boxB64 boxNonceB64 scryptSaltB64).sort
+    halt 400, { error: 'invalid json params error, missing/extra keys' }.to_json
+  end
+
+  unless data['boxB64'].length.between?(1, 1024)
     # 413 : Payload Too Large
     halt 413, { error: 'argument error : payload too large' }.to_json
   end
@@ -42,15 +50,12 @@ post '/secret' do
   # Integrity checks on the incoming nonce and secret box data. Ensure the
   # content that will be stored matches exactly what was HMAC'ed on the client
   # using BLAKE2s with a shared pepper.
-  if data && data['nonceBytesB64'] && data['boxBytesB64'] && data['blake2sHash']
-    b2_pepper = Blake2::Key.from_string('zerotime')
-    b2_hash = Blake2.hex(data['nonceBytesB64'] + data['boxBytesB64'], b2_pepper)
+  b2_pepper = Blake2::Key.from_string('zerotime')
+  b2_str = "#{data['scryptSaltB64']}#{data['boxNonceB64']}#{data['boxB64']}"
+  b2_hash = Blake2.hex(b2_str, b2_pepper)
 
-    unless b2_hash == data['blake2sHash']
-      halt 400, { error: 'BLAKE2s hash verification error' }.to_json
-    end
-  else
-    halt 400, { error: 'invalid json params error' }.to_json
+  unless b2_hash == data['blake2sHash']
+    halt 400, { error: 'BLAKE2s hash verification error' }.to_json
   end
 
   begin

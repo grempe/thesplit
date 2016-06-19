@@ -76,7 +76,6 @@ post '/secret' do
 end
 
 get '/secret/:uuid' do
-  # Parse the incoming UUID to validate
   begin
     uuid = SimpleUUID::UUID.new(params['uuid'])
   rescue
@@ -84,16 +83,10 @@ get '/secret/:uuid' do
   end
 
   key = "zerotime:secret:#{uuid.to_guid}"
-
-  begin
-    secret = redis.get(key)
-    halt 404, { error: 'not found' }.to_json if secret.nil?
-    redis.del(key)
-
-    return { secret: secret, created_at: uuid.to_time.utc.iso8601 }.to_json
-  rescue
-    halt 404, { error: 'not found' }.to_json
-  end
+  secret = redis.get(key)
+  halt 404, { error: 'not found' }.to_json if secret.nil?
+  redis.del(key)
+  return { secret: secret, created_at: uuid.to_time.utc.iso8601 }.to_json
 end
 
 # sinatra-cross_origin : Handle CORS OPTIONS pre-flight

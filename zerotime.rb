@@ -5,8 +5,8 @@ require 'redis'
 require 'simple_uuid'
 require 'blake2'
 
-# 172_800 == 48 hours
-SECRETS_EXPIRE_SECS = 172_800
+# 24 hours
+SECRETS_EXPIRE_SECS = 86_400
 
 redis = Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 

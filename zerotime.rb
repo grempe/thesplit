@@ -97,12 +97,12 @@ options '*' do
   200
 end
 
-# FALL THROUGH ROUTES
-
-get '/*' do
+# Sinatra::NotFound handler
+not_found do
   halt 404, { error: 'not found' }.to_json
 end
 
-post '/*' do
-  halt 404, { error: 'not found' }.to_json
+# Unhandled error handler
+error do
+  halt 500, { error: 'server error' }.to_json
 end

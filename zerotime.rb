@@ -4,7 +4,6 @@ require 'json'
 require 'redis'
 require 'simple_uuid'
 require 'blake2'
-require 'proof_of_work'
 
 # 172_800 == 48 hours
 SECRETS_EXPIRE_SECS = 172_800
@@ -33,37 +32,6 @@ post '/secret' do
     data = JSON.parse(params['data'])
   rescue
     halt 400, { error: 'invalid json params error' }.to_json
-  end
-
-  # HashCash Proof of Work : Verify that the POST is accompanied by a valid
-  # HashCash proof of work token to avoid spam in our DB. This puts a several
-  # seconds long computational burden on each request from the client. The
-  # computation required to validate a token on the server is tiny.
-  #
-  # Tokens used are recorded and any attempt to double spend will be rejected.
-  #
-  # Recorded tokens will auto-expire from the data store. Once they are expired
-  # then double-spend is not a concern since they will be failed based on
-  # expiration.
-  if data && data['hashcash'] && data['hashcash'].is_a?(String) && data['hashcash'].size < 100
-    key = "zerotime:hashcash:#{data['hashcash']}"
-
-    if redis.get(key)
-      # 403: Forbidden
-      halt 403, { error: 'forbidden : double spend of hashcash token' }.to_json
-    else
-      # Record this key to prevent double-spend
-      redis.set(key, Time.now.utc.iso8601)
-      redis.expire(key, 30*24*60*60)
-    end
-
-    unless ProofOfWork.valid?(data['hashcash'], identifier: 'zerotime', bits: 16)
-      # 403: Forbidden
-      halt 403, { error: 'forbidden : invalid hashcash token' }.to_json
-    end
-  else
-    # 403: Forbidden
-    halt 403, { error: 'forbidden : missing or malformed hashcash token' }.to_json
   end
 
   unless data && data['boxBytesB64'] && data['boxBytesB64'].length.between?(1, 1024)

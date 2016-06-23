@@ -27,6 +27,7 @@ PLATFORMS
 
 DEPENDENCIES
   blake2 (~> 0.5)
+  bundler (~> 1.12)
   puma (~> 3.4)
   rack-contrib (~> 1.4)
   redis (~> 3.3)

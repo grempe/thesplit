@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 ruby '2.2.4'
+gem 'bundler', '~> 1.12'
 gem 'puma', '~> 3.4'
 gem 'rack-contrib', '~> 1.4'
 gem 'sinatra', '~> 1.4'

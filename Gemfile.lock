@@ -12,7 +12,6 @@ GEM
       rack
     redis (3.3.0)
     ruby-prof (0.15.9)
-    simple_uuid (0.4.0)
     sinatra (1.4.7)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -32,7 +31,6 @@ DEPENDENCIES
   rack-contrib (~> 1.4)
   redis (~> 3.3)
   ruby-prof
-  simple_uuid (~> 0.4)
   sinatra (~> 1.4)
   sinatra-cross_origin (~> 0.3)
   sinatra-param (~> 1.4)

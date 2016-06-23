@@ -7,7 +7,6 @@ gem 'sinatra', '~> 1.4'
 gem 'sinatra-param', '~> 1.4', require: 'sinatra/param'
 gem 'sinatra-cross_origin', '~> 0.3'
 gem 'redis', '~> 3.3'
-gem 'simple_uuid', '~> 0.4'
 gem 'blake2', '~> 0.5'
 
 group :test, :development do

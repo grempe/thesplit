@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     blake2 (0.5.0)
+    ffi (1.9.10)
     git-version-bump (0.15.1)
     puma (3.4.0)
     rack (1.6.4)
@@ -10,6 +11,8 @@ GEM
       rack (~> 1.4)
     rack-protection (1.5.3)
       rack
+    rbnacl (3.4.0)
+      ffi
     redis (3.3.0)
     ruby-prof (0.15.9)
     sinatra (1.4.7)
@@ -29,6 +32,7 @@ DEPENDENCIES
   bundler (~> 1.12)
   puma (~> 3.4)
   rack-contrib (~> 1.4)
+  rbnacl (~> 3.4)
   redis (~> 3.3)
   ruby-prof
   sinatra (~> 1.4)

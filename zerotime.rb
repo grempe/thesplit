@@ -3,6 +3,7 @@ require 'sinatra/param'
 require 'sinatra/cross_origin'
 require 'json'
 require 'redis'
+require 'rbnacl'
 require 'blake2'
 
 helpers Sinatra::Param
@@ -145,11 +146,8 @@ end
 # what was HMAC'ed on the client using BLAKE2s with
 # a shared pepper and 16 Byte output.
 def valid_hash?(client_hash, server_arr)
-  begin
-    b2_pepper = Blake2::Key.from_string('zerotime')
-    server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)
-    server_hash == client_hash ? true : false
-  rescue
-    false
-  end
+  b2_pepper = Blake2::Key.from_string('zerotime')
+  server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)
+  # secure constant-time string comparison
+  RbNaCl::Util.verify32(server_hash, client_hash)
 end

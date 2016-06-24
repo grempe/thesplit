@@ -7,8 +7,12 @@ require 'blake2'
 
 helpers Sinatra::Param
 
-# 24 hours
-SECRETS_EXPIRE_SECS = 86_400
+# 1 Month
+SECRETS_EXPIRE_SECS = 60 * 60 * 24 * 30
+
+# 2**16
+SECRET_MAX_LEN_BYTES = 65_536
+
 BASE64_REGEX = /^[a-zA-Z0-9+=\/\-\_]+$/
 HEX_REGEX = /^[a-f0-9]+$/
 
@@ -35,8 +39,8 @@ post '/secret' do
   param :boxNonceB64, String, required: true, min_length: 24, max_length: 64,
                               format: BASE64_REGEX
 
-  param :boxB64, String, required: true, min_length: 1, max_length: 1024,
-                         format: BASE64_REGEX
+  param :boxB64, String, required: true, min_length: 1,
+                         max_length: SECRET_MAX_LEN_BYTES, format: BASE64_REGEX
 
   param :scryptSaltB64, String, required: true, min_length: 24, max_length: 64,
                                 format: BASE64_REGEX

@@ -76,7 +76,7 @@ class Rack::Attack
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:api/req/ip:#{req.ip}"
   throttle('api/req/ip', limit: 100, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/secret')
+    req.ip if req.path.start_with?('/api/v1/secret')
   end
 end
 

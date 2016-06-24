@@ -46,7 +46,7 @@ get '/' do
   erb :index
 end
 
-post '/secret' do
+post '/api/v1/secret' do
   param :blake2sHash, String, required: true, min_length: 32, max_length: 32,
                               format: HEX_REGEX
 
@@ -89,7 +89,7 @@ post '/secret' do
            expiresAt: t_exp.utc.iso8601 }.to_json
 end
 
-get '/secret/:id' do
+get '/api/v1/secret/:id' do
   # id is 16 Byte blake2s hash of the data that was stored
   param :id, String, required: true, min_length: 32, max_length: 32,
                      format: HEX_REGEX
@@ -98,7 +98,7 @@ get '/secret/:id' do
   sec_json = redis.get(key)
 
   if sec_json.blank?
-    logger.warn "GET /secret/:id : id not found : #{params['id']}"
+    logger.warn "GET /api/v1/secret/:id : id not found : #{params['id']}"
     raise Sinatra::NotFound
   end
 
@@ -106,13 +106,13 @@ get '/secret/:id' do
     sec = JSON.parse(sec_json)
   rescue StandardError => e
     # bad json from redis!
-    logger.error "GET /secret/:id : JSON.parse failed : #{e.class} : #{e.message} : #{sec_json}"
+    logger.error "GET /api/v1/secret/:id : JSON.parse failed : #{e.class} : #{e.message} : #{sec_json}"
     raise Sinatra::NotFound
   ensure
     # Ensure we always delete found data immediately on
     # first view, no matter what happens with the parse.
     redis.del(key)
-    logger.info "GET /secret/:id : deleted id : #{params['id']}"
+    logger.info "GET /api/v1/secret/:id : deleted id : #{params['id']}"
   end
 
   # validate the outgoing data against the hash it was stored under to

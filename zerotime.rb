@@ -7,10 +7,16 @@ require 'rbnacl/libsodium'
 require 'rbnacl'
 require 'blake2'
 
+# http://edgeguides.rubyonrails.org/active_support_core_extensions.html#time
+require 'active_support'
+require 'active_support/core_ext/object/blank.rb'
+require 'active_support/core_ext/numeric'
+require 'active_support/core_ext/string/starts_ends_with.rb'
+require 'active_support/core_ext/object/try.rb'
+
 helpers Sinatra::Param
 
-# 1 Month
-SECRETS_EXPIRE_SECS = 60 * 60 * 24 * 30
+SECRETS_EXPIRE_SECS = 30.days
 
 # 2**16
 SECRET_MAX_LEN_BYTES = 65_536

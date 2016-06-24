@@ -96,17 +96,23 @@ get '/secret/:id' do
 
   key = "zerotime:secret:#{params['id']}"
   sec_json = redis.get(key)
-  raise Sinatra::NotFound if sec_json.nil?
+
+  if sec_json.blank?
+    logger.warn "GET /secret/:id : id not found : #{params['id']}"
+    raise Sinatra::NotFound
+  end
 
   begin
     sec = JSON.parse(sec_json)
-  rescue
+  rescue StandardError => e
     # bad json from redis!
+    logger.error "GET /secret/:id : JSON.parse failed : #{e.class} : #{e.message} : #{sec_json}"
     raise Sinatra::NotFound
   ensure
     # Ensure we always delete found data immediately on
     # first view, no matter what happens with the parse.
     redis.del(key)
+    logger.info "GET /secret/:id : deleted id : #{params['id']}"
   end
 
   # validate the outgoing data against the hash it was stored under to
@@ -145,6 +151,7 @@ end
 
 # Unhandled error handler
 error do
+  logger.error "unhandled error : #{err.to_json}"
   err = {
     message: 'Server error',
     errors: {
@@ -162,5 +169,10 @@ def valid_hash?(client_hash, server_arr)
   b2_pepper = Blake2::Key.from_string('zerotime')
   server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)
   # secure constant-time string comparison
-  RbNaCl::Util.verify32(server_hash, client_hash)
+  if RbNaCl::Util.verify32(server_hash, client_hash)
+    return true
+  else
+    logger.warn "valid_hash? : false : #{client_hash} : #{server_hash}"
+    return false
+  end
 end

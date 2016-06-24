@@ -71,8 +71,8 @@ post '/secret' do
   redis.expire(key, SECRETS_EXPIRE_SECS)
 
   return { id: blake2s_hash,
-           created_at: t.utc.iso8601,
-           expires_at: t_exp.utc.iso8601 }.to_json
+           createdAt: t.utc.iso8601,
+           expiresAt: t_exp.utc.iso8601 }.to_json
 end
 
 get '/secret/:id' do

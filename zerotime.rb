@@ -3,6 +3,7 @@ require 'sinatra/param'
 require 'sinatra/cross_origin'
 require 'json'
 require 'redis'
+require 'rbnacl/libsodium'
 require 'rbnacl'
 require 'blake2'
 
@@ -22,6 +23,12 @@ redis = Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 configure do
   # CORS
   enable :cross_origin
+  set :server, :puma
+  disable :show_exceptions
+end
+
+configure :production, :development do
+  enable :logging
 end
 
 before do

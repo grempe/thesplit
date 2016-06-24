@@ -46,7 +46,7 @@ post '/secret' do
   box_nonce_b64   = params['boxNonceB64']
   box_b64         = params['boxB64']
 
-  unless has_valid_hash?(blake2s_hash, [scrypt_salt_b64, box_nonce_b64, box_b64])
+  unless valid_hash?(blake2s_hash, [scrypt_salt_b64, box_nonce_b64, box_b64])
     err = {
       message: 'Parameter must contain valid hash of required params',
       errors: {
@@ -93,7 +93,7 @@ get '/secret/:id' do
 
   # validate the outgoing data against the hash it was stored under to
   # ensure it has not been modified while at rest.
-  unless has_valid_hash?(params['id'], [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']])
+  unless valid_hash?(params['id'], [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']])
     err = {
       message: 'Server error, stored data does not match its hash, discarding',
       errors: {
@@ -140,7 +140,7 @@ end
 # stored, or that has been retrieved, matches exactly
 # what was HMAC'ed on the client using BLAKE2s with
 # a shared pepper and 16 Byte output.
-def has_valid_hash?(client_hash, server_arr)
+def valid_hash?(client_hash, server_arr)
   begin
     b2_pepper = Blake2::Key.from_string('zerotime')
     server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)

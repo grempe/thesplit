@@ -24,13 +24,12 @@ SECRET_MAX_LEN_BYTES = 65_536
 BASE64_REGEX = /^[a-zA-Z0-9+=\/\-\_]+$/
 HEX_REGEX = /^[a-f0-9]+$/
 
-redis = Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
-
 configure do
   # CORS
   enable :cross_origin
   set :server, :puma
   disable :show_exceptions
+  set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 end
 
 configure :production, :development do
@@ -42,8 +41,24 @@ before do
 end
 
 get '/' do
+  stats_increment('get-root')
   content_type :html
   erb :index
+end
+
+get '/api/v1/stats' do
+  return { timestamp: Time.now.utc.iso8601,
+           secrets_created_total: stat_total('post-secret'),
+           secrets_created_year: stat_year('post-secret'),
+           secrets_created_month: stat_month('post-secret'),
+           secrets_created_day: stat_day('post-secret'),
+           secrets_created_hour: stat_hour('post-secret'),
+           secrets_retrieved_total: stat_total('get-secret-id'),
+           secrets_retrieved_year: stat_year('get-secret-id'),
+           secrets_retrieved_month: stat_month('get-secret-id'),
+           secrets_retrieved_day: stat_day('get-secret-id'),
+           secrets_retrieved_hour: stat_hour('get-secret-id')
+         }.to_json
 end
 
 post '/api/v1/secret' do
@@ -58,6 +73,8 @@ post '/api/v1/secret' do
 
   param :scryptSaltB64, String, required: true, min_length: 24, max_length: 64,
                                 format: BASE64_REGEX
+
+  stats_increment('post-secret')
 
   blake2s_hash    = params['blake2sHash']
   scrypt_salt_b64 = params['scryptSaltB64']
@@ -78,11 +95,13 @@ post '/api/v1/secret' do
   t_exp = t + SECRETS_EXPIRE_SECS
 
   key = "zerotime:secret:#{blake2s_hash}"
-  redis.set(key, { boxNonceB64: box_nonce_b64,
-                   boxB64: box_b64,
-                   scryptSaltB64: scrypt_salt_b64 }.to_json)
+  settings.redis.set(key, { boxNonceB64: box_nonce_b64,
+                            boxB64: box_b64,
+                            scryptSaltB64: scrypt_salt_b64 }.to_json)
 
-  redis.expire(key, SECRETS_EXPIRE_SECS)
+  settings.redis.expire(key, SECRETS_EXPIRE_SECS)
+
+  logger.info "POST /api/v1/secret : created id : #{blake2s_hash}"
 
   return { id: blake2s_hash,
            createdAt: t.utc.iso8601,
@@ -94,8 +113,10 @@ get '/api/v1/secret/:id' do
   param :id, String, required: true, min_length: 32, max_length: 32,
                      format: HEX_REGEX
 
+  stats_increment('get-secret-id')
+
   key = "zerotime:secret:#{params['id']}"
-  sec_json = redis.get(key)
+  sec_json = settings.redis.get(key)
 
   if sec_json.blank?
     logger.warn "GET /api/v1/secret/:id : id not found : #{params['id']}"
@@ -105,13 +126,12 @@ get '/api/v1/secret/:id' do
   begin
     sec = JSON.parse(sec_json)
   rescue StandardError => e
-    # bad json from redis!
-    logger.error "GET /api/v1/secret/:id : JSON.parse failed : #{e.class} : #{e.message} : #{sec_json}"
+    logger.error "GET /api/v1/secret/:id : JSON.parse failed : #{e.class} : #{e.message} : #{key} : #{sec_json}"
     raise Sinatra::NotFound
   ensure
     # Ensure we always delete found data immediately on
     # first view, no matter what happens with the parse.
-    redis.del(key)
+    settings.redis.del(key)
     logger.info "GET /api/v1/secret/:id : deleted id : #{params['id']}"
   end
 
@@ -151,7 +171,7 @@ end
 
 # Unhandled error handler
 error do
-  logger.error "unhandled error : #{err.to_json}"
+  logger.error 'unhandled error'
   err = {
     message: 'Server error',
     errors: {
@@ -175,4 +195,51 @@ def valid_hash?(client_hash, server_arr)
     logger.warn "valid_hash? : false : #{client_hash} : #{server_hash}"
     return false
   end
+end
+
+# Capture basic aggregate statistics
+def stats_increment(metric)
+  raise 'invalid metric' unless metric.is_a?(String)
+  t = Time.now.utc
+  stats_base = 'zerotime:stats'
+  total_key = "#{stats_base}:#{metric}"
+  total_year_key = "#{total_key}:#{t.year}"
+  total_month_key = "#{total_year_key}:#{t.month}"
+  total_day_key = "#{total_month_key}:#{t.day}"
+  total_hour_key = "#{total_day_key}:#{t.hour}"
+
+  settings.redis.incr(total_key)
+  settings.redis.incr(total_year_key)
+  settings.redis.incr(total_month_key)
+  settings.redis.incr(total_day_key)
+  settings.redis.incr(total_hour_key)
+end
+
+def stat_total(metric)
+  num = settings.redis.get("zerotime:stats:#{metric}")
+  num.nil? ? 0 : num
+end
+
+def stat_year(metric)
+  t = Time.now.utc
+  num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}")
+  num.nil? ? 0 : num
+end
+
+def stat_month(metric)
+  t = Time.now.utc
+  num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}:#{t.month}")
+  num.nil? ? 0 : num
+end
+
+def stat_day(metric)
+  t = Time.now.utc
+  num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}:#{t.month}:#{t.day}")
+  num.nil? ? 0 : num
+end
+
+def stat_hour(metric)
+  t = Time.now.utc
+  num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}:#{t.month}:#{t.day}:#{t.hour}")
+  num.nil? ? 0 : num
 end

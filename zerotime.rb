@@ -74,6 +74,8 @@ post '/api/v1/secret' do
   param :scryptSaltB64, String, required: true, min_length: 24, max_length: 64,
                                 format: BASE64_REGEX
 
+# FIXME : make sure there is no existing data for this key!!!
+
   stats_increment('post-secret')
 
   blake2s_hash    = params['blake2sHash']
@@ -83,18 +85,28 @@ post '/api/v1/secret' do
 
   unless valid_hash?(blake2s_hash, [scrypt_salt_b64, box_nonce_b64, box_b64])
     err = {
-      message: 'Parameter must contain valid hash of required params',
+      message: 'The integrity hash did not match the data provided',
       errors: {
-        blake2sHash: 'Parameter must contain valid hash of required params'
+        blake2sHash: 'The integrity hash did not match the data provided'
       }
     }
     halt 400, err.to_json
   end
 
-  t = Time.now
+  t     = Time.now
   t_exp = t + SECRETS_EXPIRE_SECS
+  key   = "zerotime:secret:#{blake2s_hash}"
 
-  key = "zerotime:secret:#{blake2s_hash}"
+  unless settings.redis.get(key).blank?
+    err = {
+      message: 'Data conflict, a secret with this ID already exists',
+      errors: {
+        server: 'Data conflict, a secret with this ID already exists'
+      }
+    }
+    halt 409, err.to_json
+  end
+
   settings.redis.set(key, { boxNonceB64: box_nonce_b64,
                             boxB64: box_b64,
                             scryptSaltB64: scrypt_salt_b64 }.to_json)

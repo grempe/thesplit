@@ -1,7 +1,7 @@
 require 'rack'
 require 'rack/contrib'
 require 'redis'
-require './zerotime'
+require './app'
 
 # http://edgeguides.rubyonrails.org/active_support_core_extensions.html#time
 require 'active_support'

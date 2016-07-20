@@ -31,6 +31,7 @@ SECRET_MAX_LEN_BYTES = 65_536
 
 BASE64_REGEX = /^[a-zA-Z0-9+=\/\-\_]+$/
 HEX_REGEX = /^[a-f0-9]+$/
+STATS_BASE = 'zerotime:stats'
 
 configure do
   # CORS
@@ -62,21 +63,7 @@ end
 
 get '/api/v1/stats' do
   stats_increment('get:stats')
-
-  stats = { timestamp: Time.now.utc.iso8601,
-            secrets_created_total: stat_total('post-secret'),
-            secrets_created_year: stat_year('post-secret'),
-            secrets_created_month: stat_month('post-secret'),
-            secrets_created_day: stat_day('post-secret'),
-            secrets_created_hour: stat_hour('post-secret'),
-            secrets_retrieved_total: stat_total('get-secret-id'),
-            secrets_retrieved_year: stat_year('get-secret-id'),
-            secrets_retrieved_month: stat_month('get-secret-id'),
-            secrets_retrieved_day: stat_day('get-secret-id'),
-            secrets_retrieved_hour: stat_hour('get-secret-id')
-         }
-
-  return success_json(stats)
+  return success_json(stats_hash)
 end
 
 post '/api/v1/secret' do

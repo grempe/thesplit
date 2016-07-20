@@ -19,8 +19,7 @@ helpers do
   def stats_increment(metric)
     raise 'invalid metric' unless metric.is_a?(String)
     t = Time.now.utc
-    stats_base = 'zerotime:stats'
-    total_key = "#{stats_base}:#{metric}"
+    total_key = "#{STATS_BASE}:#{metric}"
     total_year_key = "#{total_key}:#{t.year}"
     total_month_key = "#{total_year_key}:#{t.month}"
     total_day_key = "#{total_month_key}:#{t.day}"
@@ -33,32 +32,52 @@ helpers do
     settings.redis.incr(total_hour_key)
   end
 
+  def stats_hash
+    { timestamp: Time.now.utc.iso8601,
+      pageview_root_total: stat_total('get:root'),
+      pageview_root_year: stat_year('get:root'),
+      pageview_root_month: stat_month('get:root'),
+      pageview_root_day: stat_day('get:root'),
+      pageview_root_hour: stat_hour('get:root'),
+      secrets_created_total: stat_total('post:secret'),
+      secrets_created_year: stat_year('post:secret'),
+      secrets_created_month: stat_month('post:secret'),
+      secrets_created_day: stat_day('post:secret'),
+      secrets_created_hour: stat_hour('post:secret'),
+      secrets_retrieved_total: stat_total('get:secret:id'),
+      secrets_retrieved_year: stat_year('get:secret:id'),
+      secrets_retrieved_month: stat_month('get:secret:id'),
+      secrets_retrieved_day: stat_day('get:secret:id'),
+      secrets_retrieved_hour: stat_hour('get:secret:id')
+    }
+  end
+
   def stat_total(metric)
-    num = settings.redis.get("zerotime:stats:#{metric}")
+    num = settings.redis.get("#{STATS_BASE}:#{metric}")
     num.nil? ? 0 : num
   end
 
   def stat_year(metric)
     t = Time.now.utc
-    num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}")
+    num = settings.redis.get("#{STATS_BASE}:#{metric}:#{t.year}")
     num.nil? ? 0 : num
   end
 
   def stat_month(metric)
     t = Time.now.utc
-    num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}:#{t.month}")
+    num = settings.redis.get("#{STATS_BASE}:#{metric}:#{t.year}:#{t.month}")
     num.nil? ? 0 : num
   end
 
   def stat_day(metric)
     t = Time.now.utc
-    num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}:#{t.month}:#{t.day}")
+    num = settings.redis.get("#{STATS_BASE}:#{metric}:#{t.year}:#{t.month}:#{t.day}")
     num.nil? ? 0 : num
   end
 
   def stat_hour(metric)
     t = Time.now.utc
-    num = settings.redis.get("zerotime:stats:#{metric}:#{t.year}:#{t.month}:#{t.day}:#{t.hour}")
+    num = settings.redis.get("#{STATS_BASE}:#{metric}:#{t.year}:#{t.month}:#{t.day}:#{t.hour}")
     num.nil? ? 0 : num
   end
 end

@@ -24,7 +24,7 @@ include Jsender
 
 helpers Sinatra::Param
 
-SECRETS_EXPIRE_SECS = 30.days
+SECRETS_EXPIRE_SECS = 1.days
 
 # 2**16
 SECRET_MAX_LEN_BYTES = 65_536

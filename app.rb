@@ -7,35 +7,51 @@ require 'redis'
 require 'rbnacl/libsodium'
 require 'rbnacl'
 require 'blake2'
+require 'redistat'
 
-require './helpers'
-
-# http://edgeguides.rubyonrails.org/active_support_core_extensions.html#time
 require 'active_support'
 require 'active_support/core_ext/object/blank.rb'
 require 'active_support/core_ext/numeric'
-require 'active_support/core_ext/string/starts_ends_with.rb'
-require 'active_support/core_ext/object/try.rb'
+require 'active_support/core_ext/integer/time'
 
-# Common JSON response
+helpers Sinatra::Param
+
+# Common JSON response format
 # http://labs.omniti.com/labs/jsend
 # https://github.com/hetznerZA/jsender
 include Jsender
 
-helpers Sinatra::Param
+# Redistat : Store basic system stats
+# See : https://github.com/grempe/redistat
+class Stats
+  include Redistat::Model
 
-SECRETS_EXPIRE_SECS = 1.days
-
-# 2**16
-SECRET_MAX_LEN_BYTES = 65_536
-
-BASE64_REGEX = /^[a-zA-Z0-9+=\/\-\_]+$/
-HEX_REGEX = /^[a-f0-9]+$/
-STATS_BASE = 'zerotime:stats'
+  depth :sec
+  expire sec: 60.minutes.to_i,
+         min: 24.hours.to_i,
+         hour: 3.months.to_i,
+         day: 10.years.to_i
+end
 
 configure do
-  # CORS
-  enable :cross_origin
+  # App Specific Settings
+  set :secrets_expire_in, 1.day
+  set :secrets_max_length, 64.kilobytes
+  set :base64_regex, /^[a-zA-Z0-9+=\/\-\_]+$/
+  set :hex_regex, /^[a-f0-9]+$/
+
+  # Sinatra CORS
+  # https://github.com/britg/sinatra-cross_origin
+  # http://www.html5rocks.com/en/tutorials/cors/
+  set :cross_origin, true
+  set :allow_origin, :any
+  set :allow_methods, [:head, :get, :put, :post, :delete, :options]
+  set :allow_credentials, false
+  set :allow_headers, ["*", "Content-Type", "Accept", "AUTHORIZATION", "Cache-Control"]
+  set :max_age, 2.days
+  set :expose_headers, ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma']
+
+  # Use PUMA
   set :server, :puma
 
   # Sinatra Param
@@ -44,6 +60,7 @@ configure do
   disable :show_exceptions
   enable :raise_errors
 
+  # Redis
   set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 end
 
@@ -52,34 +69,37 @@ configure :production, :development do
 end
 
 before do
+  # all responses are JSON by default
   content_type :json
+  # no caching, expire now
+  expires 0, :no_cache, :must_revalidate
 end
 
 get '/' do
-  stats_increment('get:root')
+  Stats.store('views/root', count: 1)
   content_type :html
   erb :index
 end
 
-get '/api/v1/stats' do
-  stats_increment('get:stats')
-  return success_json(stats_hash)
+options '/' do
+  response.headers['Allow'] = 'HEAD,GET'
+  200
 end
 
-post '/api/v1/secret' do
-  stats_increment('post:secret')
+post '/api/v1/secrets' do
+  Stats.store('views/api/v1/secrets', count: 1, post: 1)
 
   param :blake2sHash, String, required: true, min_length: 32, max_length: 32,
-                              format: HEX_REGEX
+                              format: settings.hex_regex
 
   param :boxNonceB64, String, required: true, min_length: 24, max_length: 64,
-                              format: BASE64_REGEX
+                              format: settings.base64_regex
 
   param :boxB64, String, required: true, min_length: 1,
-                         max_length: SECRET_MAX_LEN_BYTES, format: BASE64_REGEX
+                         max_length: settings.secrets_max_length, format: settings.base64_regex
 
   param :scryptSaltB64, String, required: true, min_length: 24, max_length: 64,
-                                format: BASE64_REGEX
+                                format: settings.base64_regex
 
   blake2s_hash    = params['blake2sHash']
   scrypt_salt_b64 = params['scryptSaltB64']
@@ -91,8 +111,8 @@ post '/api/v1/secret' do
   end
 
   t     = Time.now
-  t_exp = t + SECRETS_EXPIRE_SECS
-  key   = "zerotime:secret:#{blake2s_hash}"
+  t_exp = t + settings.secrets_expire_in
+  key   = "secrets:#{blake2s_hash}"
 
   unless settings.redis.get(key).blank?
     halt 409, error_json('Data conflict, secret with ID already exists', 409)
@@ -102,73 +122,92 @@ post '/api/v1/secret' do
                             boxB64: box_b64,
                             scryptSaltB64: scrypt_salt_b64 }.to_json)
 
-  settings.redis.expire(key, SECRETS_EXPIRE_SECS)
-
-  logger.info "POST /api/v1/secret : created id : #{blake2s_hash}"
+  settings.redis.expire(key, settings.secrets_expire_in)
 
   return success_json(id: blake2s_hash, createdAt: t.utc.iso8601,
-                     expiresAt: t_exp.utc.iso8601)
+                      expiresAt: t_exp.utc.iso8601)
 end
 
-get '/api/v1/secret/:id' do
-  stats_increment('get:secret:id')
+options '/api/v1/secrets' do
+  response.headers['Allow'] = 'POST'
+  200
+end
 
-  # id is 16 Byte blake2s hash of the data that was stored
+delete '/api/v1/secrets/:id' do
+  Stats.store('views/api/v1/secrets/id', count: 1)
+
+  # id is 16 byte BLAKE2s hash of the data that was stored
   param :id, String, required: true, min_length: 32, max_length: 32,
-                     format: HEX_REGEX
+                     format: settings.hex_regex
 
-  key = "zerotime:secret:#{params['id']}"
+  key = "secrets:#{params['id']}"
+  settings.redis.del(key)
+
+  return success_json
+end
+
+get '/api/v1/secrets/:id' do
+  Stats.store('views/api/v1/secrets/id', count: 1)
+
+  # id is 16 byte BLAKE2s hash of the data that was stored
+  param :id, String, required: true, min_length: 32, max_length: 32,
+                     format: settings.hex_regex
+
+  key = "secrets:#{params['id']}"
   sec_json = settings.redis.get(key)
 
-  if sec_json.blank?
-    logger.warn "GET /api/v1/secret/:id : id not found : #{params['id']}"
-    raise Sinatra::NotFound
-  end
+  raise Sinatra::NotFound if sec_json.blank?
 
   begin
     sec = JSON.parse(sec_json)
-  rescue StandardError => e
-    logger.error "GET /api/v1/secret/:id : JSON.parse failed : #{e.class} : #{e.message} : #{key} : #{sec_json}"
-    raise Sinatra::NotFound
+  rescue StandardError
+    halt 500, error_json('Fatal error, corrupt data, JSON', 500)
   ensure
-    # Ensure we always delete found data immediately on
-    # first view, no matter what happens with the parse.
+    # Always delete found data immediately on
+    # first view, even if the parse fails.
     settings.redis.del(key)
-    logger.info "GET /api/v1/secret/:id : deleted id : #{params['id']}"
   end
 
   # validate the outgoing data against the hash it was stored under to
   # ensure it has not been modified while at rest.
   unless valid_hash?(params['id'], [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']])
-    halt 500, error_json('Server error, stored data does not match its hash, discarding', 500)
+    halt 500, error_json('Fatal error, corrupt data, HMAC', 500)
   end
 
   return success_json(sec)
 end
 
-# sinatra-cross_origin : Handle CORS OPTIONS pre-flight
-# requests properly. See: https://github.com/britg/sinatra-cross_origin
-options '*' do
-  response.headers['Allow'] = 'HEAD,GET,PUT,POST,DELETE,OPTIONS'
-  response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept'
+options '/api/v1/secrets/:id' do
+  response.headers['Allow'] = 'GET,DELETE'
   200
 end
 
 # Sinatra::NotFound handler
 not_found do
-  stats_increment('error:404')
+  Stats.store('views/error/404', count: 1)
   halt 404, error_json('Not Found', 404)
 end
 
 # Custom error handler for sinatra-param
 # https://github.com/mattt/sinatra-param
 error Sinatra::Param::InvalidParameterError do
-  stats_increment('error:400')
+  # Also store the name of the invalid param in the stats db
+  Stats.store('views/error/400', {'count' => 1, env['sinatra.error'].param => 1})
   halt 400, error_json("#{env['sinatra.error'].param} is invalid", 400)
 end
 
 error do
-  stats_increment('error:500')
-  logger.error 'unhandled error'
+  Stats.store('views/error/500', count: 1)
   halt 500, error_json('Server Error', 500)
+end
+
+# Integrity check. Ensure the content that will be
+# stored, or that has been retrieved, matches exactly
+# what was HMAC'ed on the client using BLAKE2s with
+# a shared pepper and 16 Byte output. Compare HMAC
+# using secure constant-time string comparison.
+def valid_hash?(client_hash, server_arr)
+  b2_pepper = Blake2::Key.from_string('secret:app:pepper')
+  server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)
+  RbNaCl::Util.verify32(server_hash, client_hash) ? true : false
 end

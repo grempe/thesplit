@@ -14,6 +14,7 @@ gem 'redis-activesupport', '~> 4.1'
 gem 'blake2', '~> 0.5'
 gem 'rbnacl-libsodium', '~> 1.0'
 gem 'rbnacl', '~> 3.4'
+gem 'jsender', '~> 0.2'
 
 group :test, :development do
   gem 'ruby-prof'

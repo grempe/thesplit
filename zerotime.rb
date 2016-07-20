@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sinatra/param'
 require 'sinatra/cross_origin'
 require 'json'
+require 'jsender'
 require 'redis'
 require 'rbnacl/libsodium'
 require 'rbnacl'
@@ -13,6 +14,11 @@ require 'active_support/core_ext/object/blank.rb'
 require 'active_support/core_ext/numeric'
 require 'active_support/core_ext/string/starts_ends_with.rb'
 require 'active_support/core_ext/object/try.rb'
+
+# Common JSON response
+# http://labs.omniti.com/labs/jsend
+# https://github.com/hetznerZA/jsender
+include Jsender
 
 helpers Sinatra::Param
 
@@ -28,7 +34,13 @@ configure do
   # CORS
   enable :cross_origin
   set :server, :puma
+
+  # Sinatra Param
+  # https://github.com/mattt/sinatra-param
+  set :raise_sinatra_param_exceptions, true
   disable :show_exceptions
+  enable :raise_errors
+
   set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 end
 
@@ -47,18 +59,20 @@ get '/' do
 end
 
 get '/api/v1/stats' do
-  return { timestamp: Time.now.utc.iso8601,
-           secrets_created_total: stat_total('post-secret'),
-           secrets_created_year: stat_year('post-secret'),
-           secrets_created_month: stat_month('post-secret'),
-           secrets_created_day: stat_day('post-secret'),
-           secrets_created_hour: stat_hour('post-secret'),
-           secrets_retrieved_total: stat_total('get-secret-id'),
-           secrets_retrieved_year: stat_year('get-secret-id'),
-           secrets_retrieved_month: stat_month('get-secret-id'),
-           secrets_retrieved_day: stat_day('get-secret-id'),
-           secrets_retrieved_hour: stat_hour('get-secret-id')
-         }.to_json
+  stats = { timestamp: Time.now.utc.iso8601,
+            secrets_created_total: stat_total('post-secret'),
+            secrets_created_year: stat_year('post-secret'),
+            secrets_created_month: stat_month('post-secret'),
+            secrets_created_day: stat_day('post-secret'),
+            secrets_created_hour: stat_hour('post-secret'),
+            secrets_retrieved_total: stat_total('get-secret-id'),
+            secrets_retrieved_year: stat_year('get-secret-id'),
+            secrets_retrieved_month: stat_month('get-secret-id'),
+            secrets_retrieved_day: stat_day('get-secret-id'),
+            secrets_retrieved_hour: stat_hour('get-secret-id')
+         }
+
+  return success_json(stats)
 end
 
 post '/api/v1/secret' do
@@ -74,8 +88,6 @@ post '/api/v1/secret' do
   param :scryptSaltB64, String, required: true, min_length: 24, max_length: 64,
                                 format: BASE64_REGEX
 
-# FIXME : make sure there is no existing data for this key!!!
-
   stats_increment('post-secret')
 
   blake2s_hash    = params['blake2sHash']
@@ -84,13 +96,7 @@ post '/api/v1/secret' do
   box_b64         = params['boxB64']
 
   unless valid_hash?(blake2s_hash, [scrypt_salt_b64, box_nonce_b64, box_b64])
-    err = {
-      message: 'The integrity hash did not match the data provided',
-      errors: {
-        blake2sHash: 'The integrity hash did not match the data provided'
-      }
-    }
-    halt 400, err.to_json
+    halt 400, error_json('Integrity hash mismatch', 400)
   end
 
   t     = Time.now
@@ -98,13 +104,7 @@ post '/api/v1/secret' do
   key   = "zerotime:secret:#{blake2s_hash}"
 
   unless settings.redis.get(key).blank?
-    err = {
-      message: 'Data conflict, a secret with this ID already exists',
-      errors: {
-        server: 'Data conflict, a secret with this ID already exists'
-      }
-    }
-    halt 409, err.to_json
+    halt 409, error_json('Data conflict, secret with ID already exists', 409)
   end
 
   settings.redis.set(key, { boxNonceB64: box_nonce_b64,
@@ -115,9 +115,8 @@ post '/api/v1/secret' do
 
   logger.info "POST /api/v1/secret : created id : #{blake2s_hash}"
 
-  return { id: blake2s_hash,
-           createdAt: t.utc.iso8601,
-           expiresAt: t_exp.utc.iso8601 }.to_json
+  return success_json(id: blake2s_hash, createdAt: t.utc.iso8601,
+                     expiresAt: t_exp.utc.iso8601)
 end
 
 get '/api/v1/secret/:id' do
@@ -150,16 +149,10 @@ get '/api/v1/secret/:id' do
   # validate the outgoing data against the hash it was stored under to
   # ensure it has not been modified while at rest.
   unless valid_hash?(params['id'], [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']])
-    err = {
-      message: 'Server error, stored data does not match its hash, discarding',
-      errors: {
-        server: 'Server error, stored data does not match its hash, discarding'
-      }
-    }
-    halt 500, err.to_json
+    halt 500, error_json('Server error, stored data does not match its hash, discarding', 500)
   end
 
-  return { secret: sec }.to_json
+  return success_json(sec)
 end
 
 # sinatra-cross_origin : Handle CORS OPTIONS pre-flight
@@ -172,25 +165,18 @@ end
 
 # Sinatra::NotFound handler
 not_found do
-  err = {
-    message: 'Not found',
-    errors: {
-      server: 'Not found'
-    }
-  }
-  halt 404, err.to_json
+  halt 404, error_json('Not Found', 404)
 end
 
-# Unhandled error handler
+# Custom error handler for sinatra-param
+# https://github.com/mattt/sinatra-param
+error Sinatra::Param::InvalidParameterError do
+  halt 400, error_json("#{env['sinatra.error'].param} is invalid", 400)
+end
+
 error do
   logger.error 'unhandled error'
-  err = {
-    message: 'Server error',
-    errors: {
-      server: 'Server error'
-    }
-  }
-  halt 500, err.to_json
+  halt 500, error_json('Server Error', 500)
 end
 
 # Integrity check helper. Ensure the content that will be

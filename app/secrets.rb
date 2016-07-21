@@ -21,7 +21,7 @@ configure do
   # https://github.com/britg/sinatra-cross_origin
   # http://www.html5rocks.com/en/tutorials/cors/
   set :cross_origin, true
-  set :allow_origin, :any
+  set :allow_origin, '*'
   set :allow_methods, [:head, :get, :put, :post, :delete, :options]
   set :allow_credentials, false
   set :allow_headers, ["*", "Content-Type", "Accept", "AUTHORIZATION", "Cache-Control"]

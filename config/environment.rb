@@ -1,32 +1,13 @@
 require 'rubygems'
-require 'bundler'
+require 'bundler/setup'
 
-# load all the default gems
 Bundler.require(:default)
-
-# load all the environment specific gems
 Bundler.require(Sinatra::Base.environment)
 
-require 'active_support'
 require 'active_support/cache/redis_store'
 require 'active_support/core_ext/object/blank.rb'
 require 'active_support/core_ext/numeric'
 require 'active_support/core_ext/integer/time'
-
-require 'rack'
-require 'rack/contrib'
-require 'rack/attack'
-require 'rack/attack/rate-limit'
-require 'sinatra'
-require 'sinatra/param'
-require 'sinatra/cross_origin'
-require 'json'
-require 'jsender'
-require 'rbnacl/libsodium'
-require 'rbnacl'
-require 'blake2'
-require 'redis'
-require 'redistat'
 
 require './app/stats.rb'
 require './app/secrets.rb'

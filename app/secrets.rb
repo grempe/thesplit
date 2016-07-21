@@ -36,6 +36,15 @@ configure do
 
   # Redis
   set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+
+  # Redistat
+  # If using Redistat in multiple threads set this
+  # somewhere in the beginning of the execution stack
+  Redistat.thread_safe = true
+
+  Redistat.connect(host: settings.redis.client.host,
+                   port: settings.redis.client.port,
+                   db: settings.redis.client.db)
 end
 
 configure :production, :development do

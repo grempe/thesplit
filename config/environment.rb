@@ -31,8 +31,6 @@ require 'redistat'
 require './app/stats.rb'
 require './app/secrets.rb'
 
-REDIS_URL = ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379'
-
 #################################################
 # Middleware - Rack::Attack - Rate Limiting
 #################################################
@@ -51,7 +49,7 @@ class Rack::Attack
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-  Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(REDIS_URL)
+  Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 
   # Whitelist all requests from localhost
   # (blacklist & throttles are skipped)

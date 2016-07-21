@@ -14,12 +14,13 @@ gem 'sinatra-param', '~> 1.4', require: 'sinatra/param'
 gem 'sinatra-cross_origin', '~> 0.3'
 gem 'redis', '~> 3.3'
 gem 'redis-activesupport', '~> 5.0'
+gem 'redistat', git: 'https://github.com/grempe/redistat.git'
 gem 'blake2', '~> 0.5'
 gem 'rbnacl-libsodium', '~> 1.0'
 gem 'rbnacl', '~> 3.4'
 gem 'jsender', '~> 0.2'
-gem 'redistat', git: 'https://github.com/grempe/redistat.git'
 
-group :test, :development do
-  gem 'ruby-prof'
+group :test do
+  gem 'rspec'
+  gem 'rack-test'
 end

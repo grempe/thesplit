@@ -1,19 +1,3 @@
-require 'sinatra'
-require 'sinatra/param'
-require 'sinatra/cross_origin'
-require 'json'
-require 'jsender'
-require 'redis'
-require 'rbnacl/libsodium'
-require 'rbnacl'
-require 'blake2'
-require 'redistat'
-
-require 'active_support'
-require 'active_support/core_ext/object/blank.rb'
-require 'active_support/core_ext/numeric'
-require 'active_support/core_ext/integer/time'
-
 helpers Sinatra::Param
 
 # Common JSON response format
@@ -21,19 +5,12 @@ helpers Sinatra::Param
 # https://github.com/hetznerZA/jsender
 include Jsender
 
-# Redistat : Store basic system stats
-# See : https://github.com/grempe/redistat
-class Stats
-  include Redistat::Model
-
-  depth :sec
-  expire sec: 60.minutes.to_i,
-         min: 24.hours.to_i,
-         hour: 3.months.to_i,
-         day: 10.years.to_i
-end
-
 configure do
+  # Sinatra
+  set :server, :puma
+  set :root, "#{File.dirname(__FILE__)}/../"
+  # set :views, "#{settings.root}/../views"
+
   # App Specific Settings
   set :secrets_expire_in, 1.day
   set :secrets_max_length, 64.kilobytes
@@ -50,9 +27,6 @@ configure do
   set :allow_headers, ["*", "Content-Type", "Accept", "AUTHORIZATION", "Cache-Control"]
   set :max_age, 2.days
   set :expose_headers, ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma']
-
-  # Use PUMA
-  set :server, :puma
 
   # Sinatra Param
   # https://github.com/mattt/sinatra-param

@@ -13,6 +13,21 @@ require './app/stats.rb'
 require './app/secrets.rb'
 
 #################################################
+# Middleware - Rack::Robustness (Outer Layer)
+#################################################
+
+##
+# Catches all errors.
+#
+# Respond as specified.
+#
+use Rack::Robustness do |g|
+  g.status 500
+  g.content_type 'application/json'
+  g.body(error_json('server error', 500))
+end
+
+#################################################
 # Middleware - Rack::Attack - Rate Limiting
 #################################################
 

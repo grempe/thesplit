@@ -13,6 +13,16 @@ require './app/stats.rb'
 require './app/secrets.rb'
 
 #################################################
+# Middleware - Compress Responses
+#################################################
+
+# http://rack.rubyforge.org/doc/Rack/Deflater.html
+# Automatically disabled if 'no-transform'
+# Cache-Control response is set in the headers
+
+use Rack::Deflater
+
+#################################################
 # Middleware - Rack::Robustness (Outer Layer)
 #################################################
 

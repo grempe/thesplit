@@ -24,7 +24,7 @@ configure do
   set :allow_origin, :any
   set :allow_methods, [:head, :get, :put, :post, :delete, :options]
   set :allow_credentials, false
-  set :allow_headers, ["*", "Content-Type", "Accept", "AUTHORIZATION", "Cache-Control"]
+  set :allow_headers, ['*', 'Content-Type', 'Accept', 'AUTHORIZATION', 'Cache-Control']
   set :max_age, 2.days
   set :expose_headers, ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma']
 
@@ -45,6 +45,11 @@ configure do
   Redistat.connect(host: settings.redis.client.host,
                    port: settings.redis.client.port,
                    db: settings.redis.client.db)
+
+  # Content Security Policy (CSP)
+  set :csp_enabled, true
+  # CSP : Only report, don't actually enforce in the browser
+  set :csp_report_only, false
 end
 
 configure :production, :development do
@@ -54,8 +59,30 @@ end
 before do
   # all responses are JSON by default
   content_type :json
+
   # no caching, expire now
   expires 0, :no_cache, :must_revalidate
+
+  # Content Security Policy
+  # https://content-security-policy.com
+  if settings.csp_enabled?
+    csp = []
+    csp << "default-src 'none'"
+    csp << "script-src 'self' 'unsafe-eval'"
+    csp << "connect-src #{request.scheme}://#{request.host}:#{request.port}"
+    csp << "img-src 'self'"
+    csp << "style-src 'self' 'unsafe-inline'"
+    csp << "frame-ancestors 'none'"
+    csp << "form-action 'self'"
+    csp << 'upgrade-insecure-requests'
+    csp << 'block-all-mixed-content'
+    csp << 'referrer no-referrer'
+    csp << 'report-uri /csp'
+
+    header = 'Content-Security-Policy'
+    header += '-Report-Only' if settings.csp_report_only?
+    response.headers[header] = csp.join(';')
+  end
 end
 
 get '/' do
@@ -67,6 +94,19 @@ end
 options '/' do
   response.headers['Allow'] = 'HEAD,GET'
   200
+end
+
+# Content Security Policy (CSP) Reports
+post '/csp' do
+  if params && params['csp-report'].present?
+    if params['csp-report']['violated-directive'].present?
+      Stats.store('csp', :count => 1, params['csp-report']['violated-directive'].strip.to_s => 1)
+    else
+      Stats.store('csp', count: 1, unknown: 1)
+    end
+    logger.warn params['csp-report']
+  end
+  return success_json
 end
 
 post '/api/v1/secrets' do

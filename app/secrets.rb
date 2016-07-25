@@ -49,7 +49,7 @@ configure do
   # Content Security Policy (CSP)
   set :csp_enabled, true
   # CSP : Only report, don't actually enforce in the browser
-  set :csp_report_only, false
+  set :csp_report_only, true
 end
 
 configure :production, :development do

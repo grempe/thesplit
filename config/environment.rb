@@ -98,6 +98,42 @@ use Rack::Attack
 use Rack::Attack::RateLimit, throttle: ['static/req/ip', 'api/req/ip']
 
 #################################################
+# Middleware - Rack::CacheControlHeaders
+#################################################
+
+# A custom middleware.
+
+# See : https://www.mobify.com/blog/beginners-guide-to-http-cache-headers/
+# See : https://github.com/mintdigital/rack-access-control-headers/blob/master/lib/rack/access-control-headers.rb
+# See : http://railscasts.com/episodes/151-rack-middleware
+
+module Rack
+  class CacheControlHeaders
+    def initialize(app, path)
+      @app = app
+      @path = path
+    end
+
+    def call(env)
+      dup._call(env)
+    end
+
+    def _call(env)
+      response = @app.call(env)
+      if env['PATH_INFO'].match @path
+        response[1]['Cache-Control'] = 'private, max-age=0, s-maxage=0, no-cache, no-store, must-revalidate, no-transform, proxy-revalidate'
+        response[1]['Expires'] = Time.now.httpdate
+        response[1]['Pragma'] = 'no-cache'
+      end
+      response
+    end
+  end
+end
+
+# Set strict no-cache headers for all /api/* calls
+use Rack::CacheControlHeaders, '/api'
+
+#################################################
 # Middleware - Accept and Parse Form or JSON
 #################################################
 

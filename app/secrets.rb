@@ -11,6 +11,10 @@ configure do
   set :root, "#{File.dirname(__FILE__)}/../"
   # set :views, "#{settings.root}/../views"
 
+  # Caching
+  # https://www.sitepoint.com/sinatras-little-helpers/
+  set :start_time, Time.now
+
   # App Specific Settings
   set :secrets_expire_in, 1.day
   set :secrets_max_length, 64.kilobytes
@@ -60,8 +64,12 @@ before do
   # all responses are JSON by default
   content_type :json
 
-  # no caching, expire now
-  expires 0, :no_cache, :must_revalidate
+  # Caching
+  # see also Rack::CacheControlHeaders middleware
+  # which prevents caching of /api/*
+  last_modified settings.start_time
+  etag settings.start_time.to_s
+  expires 1.hour, :public, :must_revalidate, :no_transform
 
   # Content Security Policy
   # https://content-security-policy.com

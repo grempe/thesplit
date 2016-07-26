@@ -130,6 +130,11 @@ get '/heartbeat' do
   return success_json(timestamp: Time.now.utc.iso8601)
 end
 
+options '/heartbeat' do
+  response.headers['Allow'] = 'HEAD,GET'
+  200
+end
+
 # Content Security Policy (CSP) Reports
 post '/csp' do
   if params && params['csp-report'].present?

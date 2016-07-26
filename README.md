@@ -32,6 +32,27 @@ Open a console
 bundle exec pry -r./config/environment.rb
 ```
 
+Run Rspec specs
+
+```
+bundle exec rspec
+```
+
+Run Rspec tests with Guard (watching for file changes)
+
+```
+bundle exec guard -P rspec
+```
+
+Run Rspec tests as Travis-CI would
+
+```
+rake wwtd           # test on all combinations defined in .travis.yml
+rake wwtd:bundle    # bundle for all combinations
+rake wwtd:local     # test on all combinations defined in .travis.yml on current ruby
+rake wwtd:parallel  # test on all combinations defined in .travis.yml in parallel
+```
+
 ## Legal
 
 ### Copyright

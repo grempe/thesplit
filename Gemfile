@@ -31,4 +31,6 @@ group :test, :development do
   gem 'rack-test'
   gem 'pry'
   gem 'guard-puma'
+  gem 'guard-rspec', require: false
+  gem 'wwtd'
 end

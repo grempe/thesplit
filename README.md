@@ -1,5 +1,7 @@
 # [thesplit.is](https://thesplit.is)
 
+[![Build Status](https://travis-ci.org/thesplit/thesplit.svg?branch=master)](https://travis-ci.org/thesplit/thesplit)
+
 The open-source, end-to-end encrypted, zero-knowledge, auto-expiring, cryptographically secure, secret sharing service.
 
 We all have secrets. Send yours safely.

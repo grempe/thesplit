@@ -144,6 +144,11 @@ post '/csp' do
   return success_json
 end
 
+options '/csp' do
+  response.headers['Allow'] = 'POST'
+  200
+end
+
 post '/api/v1/secrets' do
   Stats.store('views/api/v1/secrets', count: 1, post: 1)
 

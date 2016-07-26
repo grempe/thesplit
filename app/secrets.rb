@@ -244,7 +244,7 @@ end
 # a shared pepper and 16 Byte output. Compare HMAC
 # using secure constant-time string comparison.
 def valid_hash?(client_hash, server_arr)
-  b2_pepper = Blake2::Key.from_string('secret:app:pepper')
+  b2_pepper = Blake2::Key.from_string(ENV['BLAKE2S_PEPPER'] ||= 'secret:app:pepper')
   server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)
   RbNaCl::Util.verify32(server_hash, client_hash) ? true : false
 end

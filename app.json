@@ -1,0 +1,56 @@
+{
+  "name": "thesplit.is clone",
+  "description": "A private copy of the https://thesplit.is zero-knowledge, end-to-end encrypted, secret sharing web application. Don't trust the hosted version? Run your own.",
+  "repository": "https://github.com/thesplit/thesplit",
+  "website": "https://thesplit.is/",
+  "env": {
+    "PUMA_WORKERS": {
+      "description": "How many Puma server workers to start",
+      "value": "2",
+      "required": false
+    },
+    "PUMA_THREADS": {
+      "description": "How many Puma server threads per worker",
+      "value": "5",
+      "required": false
+    },
+    "BLAKE2S_PEPPER": {
+      "description": "The public pepper used as the key for BLAKE2s HMAC integrity checks. This much match the value set in the client.",
+      "value": "secret:app:pepper",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-redis:free",
+      "as": "REDIS"
+    }
+  ],
+  "keywords": [ "thesplit",
+                "clone",
+                "ruby",
+                "redis",
+                "security",
+                "privacy",
+                "private",
+                "crypto",
+                "cryptography",
+                "encryption",
+                "encrypted",
+                "end-to-end",
+                "e2e",
+                "nacl",
+                "blake2s",
+                "secret",
+                "sharing",
+                "zero-knowledge",
+                "expiring",
+                "expire",
+                "shamir"]
+}

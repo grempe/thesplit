@@ -38,7 +38,7 @@ configure do
   # App Specific Settings
   set :secrets_expire_in, 1.day
   set :secrets_max_length, 64.kilobytes
-  set :base64_regex, /^[a-zA-Z0-9+=\/\-\_]+$/
+  set :base64_regex, %r{^[a-zA-Z0-9+=\/\-\_]+$}
   set :hex_regex, /^[a-f0-9]+$/
 
   # Sinatra CORS
@@ -134,7 +134,8 @@ end
 post '/csp' do
   if params && params['csp-report'].present?
     if params['csp-report']['violated-directive'].present?
-      Stats.store('csp', :count => 1, params['csp-report']['violated-directive'].strip.to_s => 1)
+      directive = params['csp-report']['violated-directive'].strip.to_s
+      Stats.store('csp', :count => 1, directive => 1)
     else
       Stats.store('csp', count: 1, unknown: 1)
     end
@@ -153,7 +154,8 @@ post '/api/v1/secrets' do
                               format: settings.base64_regex
 
   param :boxB64, String, required: true, min_length: 1,
-                         max_length: settings.secrets_max_length, format: settings.base64_regex
+                         max_length: settings.secrets_max_length,
+                         format: settings.base64_regex
 
   param :scryptSaltB64, String, required: true, min_length: 24, max_length: 64,
                                 format: settings.base64_regex
@@ -227,7 +229,8 @@ get '/api/v1/secrets/:id' do
 
   # validate the outgoing data against the hash it was stored under to
   # ensure it has not been modified while at rest.
-  unless valid_hash?(params['id'], [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']])
+  server_arr = [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']]
+  unless valid_hash?(params['id'], server_arr)
     halt 500, error_json('Fatal error, corrupt data, HMAC', 500)
   end
 
@@ -249,7 +252,7 @@ end
 # https://github.com/mattt/sinatra-param
 error Sinatra::Param::InvalidParameterError do
   # Also store the name of the invalid param in the stats db
-  Stats.store('views/error/400', {'count' => 1, env['sinatra.error'].param => 1})
+  Stats.store('views/error/400', 'count' => 1, env['sinatra.error'].param => 1)
   halt 400, error_json("#{env['sinatra.error'].param} is invalid", 400)
 end
 
@@ -264,7 +267,7 @@ end
 # a shared pepper and 16 Byte output. Compare HMAC
 # using secure constant-time string comparison.
 def valid_hash?(client_hash, server_arr)
-  b2_pepper = Blake2::Key.from_string(ENV['BLAKE2S_PEPPER'] ||= 'secret:app:pepper')
-  server_hash = Blake2.hex(server_arr.join, b2_pepper, 16)
+  b2p = Blake2::Key.from_string(ENV['BLAKE2S_PEPPER'] ||= 'secret:app:pepper')
+  server_hash = Blake2.hex(server_arr.join, b2p, 16)
   RbNaCl::Util.verify32(server_hash, client_hash) ? true : false
 end

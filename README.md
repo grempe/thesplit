@@ -22,7 +22,7 @@ Setup
 bundle install
 ```
 
-Run a local dev server (expects Redis to be running)
+Run a local dev server (expects Redis to be running) and run specs on file changes.
 
 ```
 bundle exec guard
@@ -40,7 +40,7 @@ Run Rspec specs
 bundle exec rspec
 ```
 
-Run Rspec tests with Guard (watching for file changes)
+Run ONLY Rspec tests with Guard (watching for file changes)
 
 ```
 bundle exec guard -P rspec

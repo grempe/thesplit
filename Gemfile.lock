@@ -67,6 +67,7 @@ GEM
     rack-robustness (1.1.0)
     rack-test (0.6.3)
       rack (>= 1.0)
+    rake (10.4.2)
     rb-fsevent (0.9.7)
     rb-inotify (0.9.7)
       ffi (>= 0.5.0)
@@ -130,6 +131,7 @@ DEPENDENCIES
   rack-contrib (~> 1.4)
   rack-robustness (~> 1.1)
   rack-test
+  rake
   rbnacl (~> 3.4)
   rbnacl-libsodium (~> 1.0)
   redis (~> 3.3)

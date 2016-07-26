@@ -25,12 +25,10 @@ gem 'rbnacl-libsodium', '~> 1.0', require: 'rbnacl/libsodium'
 gem 'rbnacl', '~> 3.4', require: 'rbnacl'
 gem 'jsender', '~> 0.2'
 
-group :test do
+group :test, :development do
+  gem 'rake'
   gem 'rspec'
   gem 'rack-test'
-end
-
-group :development do
   gem 'pry'
   gem 'guard-puma'
 end

@@ -1,6 +1,6 @@
 {
   "name": "thesplit.is clone",
-  "description": "A private copy of the https://thesplit.is zero-knowledge, end-to-end encrypted, secret sharing web application. Don't trust the hosted version? Run your own.",
+  "description": "A private copy of the https://thesplit.is zero-knowledge, encrypted, secret sharing web app. Don't trust us? Run your own!",
   "repository": "https://github.com/thesplit/thesplit",
   "website": "https://thesplit.is/",
   "env": {

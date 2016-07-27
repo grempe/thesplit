@@ -31,6 +31,14 @@ configure do
   set :root, "#{File.dirname(__FILE__)}/../"
   # set :views, "#{settings.root}/../views"
 
+  # Content Settings
+  set :site_name, ENV['SITE_NAME'] ||= 'thesplit.is'
+  set :site_domain, ENV['SITE_DOMAIN'] ||= 'thesplit.is'
+  set :site_tagline, ENV['SITE_TAGLINE'] ||= 'the end-to-end encrypted, zero-knowledge, auto-expiring, cryptographically secure, secret sharing service'
+  set :site_owner_name, ENV['SITE_OWNER_NAME'] ||= 'Glenn Rempe'
+  set :site_owner_email, ENV['SITE_OWNER_EMAIL'] ||= 'glenn@rempe.us'
+  set :site_owner_twitter, ENV['SITE_OWNER_TWITTER'] ||= 'grempe' # w/ no @ sign
+
   # Caching
   # https://www.sitepoint.com/sinatras-little-helpers/
   set :start_time, Time.now

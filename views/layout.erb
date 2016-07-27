@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Glenn Rempe <glenn@rempe.us>"/>
+    <link rel="author" href="/humans.txt"/>
+    <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+    <title><%= settings.site_name %> : <%= settings.site_tagline %></title>
+    <link rel="stylesheet" href="css/spectre-0.1.23/dist/spectre.min.css" integrity="sha384-rQIIoFzVaD19jQF8ldEJFgtZ1mGBVERWEsIK5GkwJSda8YsI7gIhcmTJ5vzrRcfV" crossorigin="anonymous"/>
+  </head>
+
+  <body>
+    <%= yield %>
+    <div id="footer" class="text-center">
+      <br>
+      <div class="divider"></div>
+      <br>
+      <em class="silver"><%= settings.site_tagline %></em><br>
+      <br>
+      <p class="silver">&copy; <%= y = Time.now.utc.year; y == 2016 ? y : "2016-#{y}" %> <%= settings.site_owner_name %> - <a href="https://twitter.com/<%= settings.site_owner_twitter %>" target="_blank">@<%= settings.site_owner_twitter %></a></p>
+    </div>
+    <script src="js/build.js" integrity="sha384-fhPooc8eP8xSoeyT3dwSrfUf8ITUhKGCIlccHe5pSafUpYsNvI2SWvWUBOjO8P5z" crossorigin="anonymous"></script>
+  </body>
+</html>

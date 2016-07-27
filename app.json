@@ -18,6 +18,36 @@
       "description": "The public pepper used as the key for BLAKE2s HMAC integrity checks. This much match the value set in the client.",
       "value": "secret:app:pepper",
       "required": false
+    },
+    "SITE_NAME": {
+      "description": "The name of this web site for use in headers and titles",
+      "value": "thesplit.is",
+      "required": false
+    },
+    "SITE_DOMAIN": {
+      "description": "The domain of this web site",
+      "value": "thesplit.is",
+      "required": false
+    },
+    "SITE_TAGLINE": {
+      "description": "The tagline of this web site",
+      "value": "end-to-end encrypted zero-knowledge secret sharing",
+      "required": false
+    },
+    "SITE_OWNER_NAME": {
+      "description": "The full name of the operator of this site",
+      "value": "Glenn Rempe",
+      "required": false
+    },
+    "SITE_OWNER_EMAIL": {
+      "description": "The email address of the operator of this site",
+      "value": "glenn@rempe.us",
+      "required": false
+    },
+    "SITE_OWNER_TWITTER": {
+      "description": "The Twitter account (no @) of the operator of this site",
+      "value": "grempe",
+      "required": false
     }
   },
   "formation": {

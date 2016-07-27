@@ -16,13 +16,17 @@ Trust issues? Want to run your own copy of this application on Heroku?
 
 ## Development
 
+Although the primary data store for this application is Redis, no Redis
+instance is needed in the `development` or `test` environments since [MockRedis](https://github.com/brigade/mock_redis) is used. As a result no
+data will persist between server restarts unless in `production`.
+
 Setup
 
 ```
 bundle install
 ```
 
-Run a local dev server (expects Redis to be running) and run specs on file changes.
+Run a local dev server and run specs on file changes.
 
 ```
 bundle exec guard

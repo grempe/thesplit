@@ -74,8 +74,8 @@ class Rack::Attack
   # Note: The store is only used for throttling (not blacklisting and
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
-
-  Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+  redis_url = ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379'
+  Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(redis_url)
 
   # Whitelist all requests from localhost
   # (blacklist & throttles are skipped)
@@ -112,7 +112,10 @@ class Rack::Attack
   end
 end
 
-use Rack::Attack
+# By running only in prod no local redis is needed in dev/test
+if ENV['RACK_ENV'] == 'production'
+  use Rack::Attack
+end
 
 #################################################
 # Middleware - Rack::Attack::RateLimit - Headers
@@ -125,7 +128,10 @@ use Rack::Attack
 #   X-Ratelimit-Limit: 10
 #   X-Ratelimit-Remaining: 8
 
-use Rack::Attack::RateLimit, throttle: ['static/req/ip', 'api/req/ip']
+# By running only in prod no local redis is needed in dev/test
+if ENV['RACK_ENV'] == 'production'
+  use Rack::Attack::RateLimit, throttle: ['static/req/ip', 'api/req/ip']
+end
 
 #################################################
 # Middleware - Rack::CacheControlHeaders

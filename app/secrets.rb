@@ -58,17 +58,20 @@ configure do
   disable :show_exceptions
   enable :raise_errors
 
-  # Redis
-  set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+  if settings.production?
+    set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+  elsif settings.test?
+    # Use DB 15 for test so we don't step on dev data
+    set :redis, MockRedis.new(url: 'redis://127.0.0.1:6379/15')
+  else
+    set :redis, MockRedis.new(url: 'redis://127.0.0.1:6379')
+  end
 
   # Redistat
   # If using Redistat in multiple threads set this
   # somewhere in the beginning of the execution stack
   Redistat.thread_safe = true
-
-  Redistat.connect(host: settings.redis.client.host,
-                   port: settings.redis.client.port,
-                   db: settings.redis.client.db)
+  Redistat.connection = settings.redis.client
 
   # Content Security Policy (CSP)
   set :csp_enabled, true

@@ -22,8 +22,11 @@ require 'rspec'
 require 'rack/test'
 
 RSpec.configure do |config|
-
   config.include Rack::Test::Methods
+
+  config.before(:each) {
+    app.settings.redis.flushall
+  }
 
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

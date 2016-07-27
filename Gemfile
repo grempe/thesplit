@@ -33,4 +33,5 @@ group :test, :development do
   gem 'guard-puma'
   gem 'guard-rspec', require: false
   gem 'wwtd'
+  gem 'mock_redis'
 end

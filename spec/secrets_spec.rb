@@ -26,10 +26,6 @@ describe 'root' do
     Sinatra::Application
   end
 
-  before do
-    app.settings.redis.flushdb
-  end
-
   context 'GET /' do
     it 'returns expected result' do
       get '/'
@@ -56,10 +52,6 @@ end
 describe 'Secrets' do
   def app
     Sinatra::Application
-  end
-
-  before do
-    app.settings.redis.flushdb
   end
 
   context 'OPTIONS /api/v1/secrets' do

@@ -74,7 +74,7 @@ class Rack::Attack
   # Note: The store is only used for throttling (not blacklisting and
   # whitelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
-  redis_url = ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379'
+  redis_url = ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379'
   Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(redis_url)
 
   # Whitelist all requests from localhost

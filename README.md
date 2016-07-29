@@ -12,6 +12,13 @@ We all have secrets. Send yours safely.
 
 Trust issues? Want to run your own copy of this application on Heroku?
 
+Use this [Heroku button](https://blog.heroku.com/heroku-button) to perform
+a free one-click install of a new private instance of this application
+on Heroku. This will configure a single Heroku Dyno and an instance of
+the Redis Cloud Redis DB addon. The source code will be pulled from the master
+branch of the [github.com/thesplit/thesplit](https://github.com/thesplit/thesplit)
+repository.
+
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/thesplit/thesplit)
 
 ## Development

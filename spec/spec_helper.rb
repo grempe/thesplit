@@ -25,7 +25,7 @@ RSpec.configure do |config|
   config.include Rack::Test::Methods
 
   config.before(:each) {
-    app.settings.redis.flushall
+    $redis.flushdb
   }
 
   # rspec-expectations config goes here. You can use an alternate

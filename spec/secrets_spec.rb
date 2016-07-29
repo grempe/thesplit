@@ -74,7 +74,7 @@ describe 'Secrets' do
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
       key = "secrets:#{blake2sHash}"
-      expect(app.settings.redis.get(key)).to be_nil
+      expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
         blake2sHash: blake2sHash,
@@ -90,7 +90,7 @@ describe 'Secrets' do
       expect(resp['status']).to eq('success')
       expect(resp['data'].keys).to eq(%w(id createdAt expiresAt))
 
-      redis_value = app.settings.redis.get(key)
+      redis_value = $redis.get(key)
       redis_value_parsed = JSON.parse(redis_value)
       expect(redis_value_parsed).to eq({'boxNonceB64' => boxNonceB64,
                                         'boxB64' => boxB64,
@@ -118,7 +118,7 @@ describe 'Secrets' do
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
       key = "secrets:#{blake2sHash}"
-      expect(app.settings.redis.get(key)).to be_nil
+      expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
         blake2sHash: blake2sHash,
@@ -126,7 +126,7 @@ describe 'Secrets' do
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
-      redis_value = app.settings.redis.get(key)
+      redis_value = $redis.get(key)
       redis_value_parsed = JSON.parse(redis_value)
       expect(redis_value_parsed).to eq({'boxNonceB64' => boxNonceB64,
                                         'boxB64' => boxB64,
@@ -145,7 +145,7 @@ describe 'Secrets' do
       expect(resp['data']['boxB64']).to eq(boxB64)
       expect(resp['data']['scryptSaltB64']).to eq(scryptSaltB64)
 
-      expect(app.settings.redis.get(key)).to be_nil
+      expect($redis.get(key)).to be_nil
     end
   end
 
@@ -157,7 +157,7 @@ describe 'Secrets' do
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
       key = "secrets:#{blake2sHash}"
-      expect(app.settings.redis.get(key)).to be_nil
+      expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
         blake2sHash: blake2sHash,
@@ -165,7 +165,7 @@ describe 'Secrets' do
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
-      redis_value = app.settings.redis.get(key)
+      redis_value = $redis.get(key)
       redis_value_parsed = JSON.parse(redis_value)
       expect(redis_value_parsed).to eq({'boxNonceB64' => boxNonceB64,
                                         'boxB64' => boxB64,
@@ -181,7 +181,7 @@ describe 'Secrets' do
       expect(resp['status']).to eq('success')
       expect(resp['data']).to be_nil
 
-      expect(app.settings.redis.get(key)).to be_nil
+      expect($redis.get(key)).to be_nil
     end
   end
 end

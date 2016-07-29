@@ -58,8 +58,7 @@
   },
   "addons": [
     {
-      "plan": "heroku-redis:hobby-dev",
-      "as": "REDIS"
+      "plan": "rediscloud:30"
     }
   ],
   "keywords": [ "thesplit",

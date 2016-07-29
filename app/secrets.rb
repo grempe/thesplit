@@ -66,23 +66,17 @@ configure do
   disable :show_exceptions
   enable :raise_errors
 
+  ruri = URI.parse(ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379')
+  rparam = { host: ruri.host, port: ruri.port, password: ruri.password }
+  # Use DB 15 for test so we don't step on dev data
+  rparam.merge!({db: 15}) if settings.test?
+
+  $redis = settings.production? ? Redis.new(rparam) : MockRedis.new(rparam)
+
   # If using Redistat in multiple threads set this
   # somewhere in the beginning of the execution stack
   Redistat.thread_safe = true
-
-  if settings.production?
-    set :redis, Redis.new(url: ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
-    Redistat.connect(host: settings.redis.client.host,
-                     port: settings.redis.client.port,
-                     db: settings.redis.client.db)
-  elsif settings.test?
-    # Use DB 15 for test so we don't step on dev data
-    set :redis, MockRedis.new(url: 'redis://127.0.0.1:6379/15')
-    Redistat.connection = settings.redis.client
-  else
-    set :redis, MockRedis.new(url: 'redis://127.0.0.1:6379')
-    Redistat.connection = settings.redis.client
-  end
+  Redistat.connection = $redis
 
   # Content Security Policy (CSP)
   set :csp_enabled, true
@@ -197,15 +191,15 @@ post '/api/v1/secrets' do
   t_exp = t + settings.secrets_expire_in
   key   = gen_storage_key(blake2s_hash)
 
-  unless settings.redis.get(key).blank?
+  unless $redis.get(key).blank?
     halt 409, error_json('Data conflict, secret with ID already exists', 409)
   end
 
-  settings.redis.set(key, { boxNonceB64: box_nonce_b64,
+  $redis.set(key, { boxNonceB64: box_nonce_b64,
                             boxB64: box_b64,
                             scryptSaltB64: scrypt_salt_b64 }.to_json)
 
-  settings.redis.expire(key, settings.secrets_expire_in)
+  $redis.expire(key, settings.secrets_expire_in)
 
   return success_json(id: blake2s_hash, createdAt: t.utc.iso8601,
                       expiresAt: t_exp.utc.iso8601)
@@ -224,7 +218,7 @@ delete '/api/v1/secrets/:id' do
                      format: settings.hex_regex
 
   key = gen_storage_key(params['id'])
-  settings.redis.del(key)
+  $redis.del(key)
 
   return success_json
 end
@@ -237,7 +231,7 @@ get '/api/v1/secrets/:id' do
                      format: settings.hex_regex
 
   key = gen_storage_key(params['id'])
-  sec_json = settings.redis.get(key)
+  sec_json = $redis.get(key)
 
   raise Sinatra::NotFound if sec_json.blank?
 
@@ -248,7 +242,7 @@ get '/api/v1/secrets/:id' do
   ensure
     # Always delete found data immediately on
     # first view, even if the parse fails.
-    settings.redis.del(key)
+    $redis.del(key)
   end
 
   # validate the outgoing data against the hash it was stored under to

@@ -195,7 +195,7 @@ post '/api/v1/secrets' do
 
   t     = Time.now
   t_exp = t + settings.secrets_expire_in
-  key   = "secrets:#{blake2s_hash}"
+  key   = gen_storage_key(blake2s_hash)
 
   unless settings.redis.get(key).blank?
     halt 409, error_json('Data conflict, secret with ID already exists', 409)
@@ -223,7 +223,7 @@ delete '/api/v1/secrets/:id' do
   param :id, String, required: true, min_length: 32, max_length: 32,
                      format: settings.hex_regex
 
-  key = "secrets:#{params['id']}"
+  key = gen_storage_key(params['id'])
   settings.redis.del(key)
 
   return success_json
@@ -236,7 +236,7 @@ get '/api/v1/secrets/:id' do
   param :id, String, required: true, min_length: 32, max_length: 32,
                      format: settings.hex_regex
 
-  key = "secrets:#{params['id']}"
+  key = gen_storage_key(params['id'])
   sec_json = settings.redis.get(key)
 
   raise Sinatra::NotFound if sec_json.blank?
@@ -294,4 +294,8 @@ def valid_hash?(client_hash, server_arr)
   b2p = Blake2::Key.from_string(ENV['BLAKE2S_PEPPER'] ||= 'secret:app:pepper')
   server_hash = Blake2.hex(server_arr.join, b2p, 16)
   RbNaCl::Util.verify32(server_hash, client_hash) ? true : false
+end
+
+def gen_storage_key(id)
+  "secrets:#{id}"
 end

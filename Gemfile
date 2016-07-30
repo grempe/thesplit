@@ -19,10 +19,6 @@ gem 'activesupport', '~> 5.0'
 gem 'redis', '~> 3.3'
 gem 'redis-activesupport', '~> 5.0'
 gem 'redistat', git: 'https://github.com/grempe/redistat.git'
-
-gem 'blake2', '~> 0.5'
-gem 'rbnacl-libsodium', '~> 1.0', require: 'rbnacl/libsodium'
-gem 'rbnacl', '~> 3.4', require: 'rbnacl'
 gem 'jsender', '~> 0.2'
 
 group :test, :development do

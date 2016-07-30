@@ -29,7 +29,6 @@ configure do
   # Sinatra
   set :server, :puma
   set :root, "#{File.dirname(__FILE__)}/../"
-  # set :views, "#{settings.root}/../views"
 
   # Content Settings
   set :site_name, ENV['SITE_NAME'] ||= 'thesplit.is'
@@ -183,10 +182,6 @@ post '/api/v1/secrets' do
   box_nonce_b64   = params['boxNonceB64']
   box_b64         = params['boxB64']
 
-  unless valid_hash?(blake2s_hash, [scrypt_salt_b64, box_nonce_b64, box_b64])
-    halt 400, error_json('Integrity hash mismatch', 400)
-  end
-
   t     = Time.now
   t_exp = t + settings.secrets_expire_in
   key   = gen_storage_key(blake2s_hash)
@@ -240,16 +235,9 @@ get '/api/v1/secrets/:id' do
   rescue StandardError
     halt 500, error_json('Fatal error, corrupt data, JSON', 500)
   ensure
-    # Always delete found data immediately on
-    # first view, even if the parse fails.
+    # Always delete found data immediately on first view,
+    # even if the parse fails.
     $redis.del(key)
-  end
-
-  # validate the outgoing data against the hash it was stored under to
-  # ensure it has not been modified while at rest.
-  server_arr = [sec['scryptSaltB64'], sec['boxNonceB64'], sec['boxB64']]
-  unless valid_hash?(params['id'], server_arr)
-    halt 500, error_json('Fatal error, corrupt data, HMAC', 500)
   end
 
   return success_json(sec)
@@ -277,17 +265,6 @@ end
 error do
   Stats.store('views/error/500', count: 1)
   halt 500, error_json('Server Error', 500)
-end
-
-# Integrity check. Ensure the content that will be
-# stored, or that has been retrieved, matches exactly
-# what was HMAC'ed on the client using BLAKE2s with
-# a shared pepper and 16 Byte output. Compare HMAC
-# using secure constant-time string comparison.
-def valid_hash?(client_hash, server_arr)
-  b2p = Blake2::Key.from_string(ENV['BLAKE2S_PEPPER'] ||= 'secret:app:pepper')
-  server_hash = Blake2.hex(server_arr.join, b2p, 16)
-  RbNaCl::Util.verify32(server_hash, client_hash) ? true : false
 end
 
 def gen_storage_key(id)

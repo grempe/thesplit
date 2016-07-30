@@ -14,11 +14,6 @@
       "value": "5",
       "required": false
     },
-    "BLAKE2S_PEPPER": {
-      "description": "The public pepper used as the key for BLAKE2s HMAC integrity checks. This much match the value set in the client.",
-      "value": "secret:app:pepper",
-      "required": false
-    },
     "SITE_NAME": {
       "description": "The name of this web site for use in headers and titles",
       "value": "thesplit.is",
@@ -45,7 +40,7 @@
       "required": false
     },
     "SITE_OWNER_TWITTER": {
-      "description": "The Twitter account (no @) of the operator of this site",
+      "description": "The Twitter account (without @ sign) of the operator of this site",
       "value": "grempe",
       "required": false
     }
@@ -81,5 +76,8 @@
                 "zero-knowledge",
                 "expiring",
                 "expire",
-                "shamir"]
+                "shamir",
+                "password",
+                "passphrase"
+              ]
 }

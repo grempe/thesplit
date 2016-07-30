@@ -23,9 +23,15 @@ repository.
 
 ## Development
 
+This repository contains the Ruby (Sinatra) API server source code for `thesplit`.
+
+The Vue.js based client source code can be found in the [github.com/thesplit/thesplit-vue](https://github.com/thesplit/thesplit-vue)
+repository. Here you'll find only a copy of the ready to use Javascript from `thesplit-vue/dist` dir under `public/js/build.*` which will be periodically updated
+when releases are cut from there.
+
 Although the primary data store for this application is Redis, no Redis
-instance is needed in the `development` or `test` environments since [MockRedis](https://github.com/brigade/mock_redis) is used. As a result no
-data will persist between server restarts unless in `production`.
+instance is needed in the `development` or `test` environments since [MockRedis](https://github.com/brigade/mock_redis) is used. Keep in mind that as
+a result no data will persist between server restarts unless in `production`.
 
 Setup
 

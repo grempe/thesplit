@@ -16,33 +16,33 @@
     },
     "SITE_NAME": {
       "description": "The name of this web site for use in headers and titles",
-      "value": "thesplit.is",
-      "required": false
+      "value": "",
+      "required": true
     },
     "SITE_DOMAIN": {
       "description": "The domain of this web site",
-      "value": "thesplit.is",
-      "required": false
+      "value": "",
+      "required": true
     },
     "SITE_TAGLINE": {
       "description": "The tagline of this web site",
-      "value": "end-to-end encrypted zero-knowledge secret sharing",
-      "required": false
+      "value": "",
+      "required": true
     },
     "SITE_OWNER_NAME": {
       "description": "The full name of the operator of this site",
-      "value": "Glenn Rempe",
-      "required": false
+      "value": "",
+      "required": true
     },
     "SITE_OWNER_EMAIL": {
       "description": "The email address of the operator of this site",
-      "value": "glenn@rempe.us",
-      "required": false
+      "value": "",
+      "required": true
     },
     "SITE_OWNER_TWITTER": {
       "description": "The Twitter account (without @ sign) of the operator of this site",
-      "value": "grempe",
-      "required": false
+      "value": "",
+      "required": true
     }
   },
   "formation": {

@@ -51,6 +51,7 @@ GEM
     minitest (5.9.0)
     mock_redis (0.16.1)
     nenv (0.3.0)
+    newrelic_rpm (3.16.0.318)
     notiffany (0.1.0)
       nenv (~> 0.1)
       shellany (~> 0.0)
@@ -126,6 +127,7 @@ DEPENDENCIES
   jsender (~> 0.2)
   json (~> 2.0)
   mock_redis
+  newrelic_rpm
   pry
   puma (~> 3.5)
   rack (~> 1.6)

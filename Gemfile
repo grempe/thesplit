@@ -31,3 +31,7 @@ group :test, :development do
   gem 'wwtd'
   gem 'mock_redis'
 end
+
+group :production do
+  gem 'newrelic_rpm'
+end

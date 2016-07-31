@@ -96,7 +96,7 @@ before do
   # which prevents caching of /api/*
   last_modified settings.start_time
   etag settings.start_time.to_s
-  expires 1.hour, :public, :must_revalidate
+  expires 1.hour, :public, :must_revalidate, s_maxage: 24.hours
 
   # Content Security Policy
   # https://content-security-policy.com

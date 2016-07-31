@@ -87,10 +87,6 @@ configure :production, :development do
   enable :logging
 end
 
-configure :production do
-  require 'newrelic_rpm'
-end
-
 before do
   # all responses are JSON by default
   content_type :json

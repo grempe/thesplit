@@ -281,5 +281,5 @@ end
 # another small step towards protecting the anonymity of the
 # creator.
 def gen_storage_key(id)
-  "secrets:#{ObjectHash.hexdigest(id)}"
+  "secrets:#{Digest::SHA256.hexdigest(id)}"
 end

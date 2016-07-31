@@ -54,7 +54,6 @@ GEM
     notiffany (0.1.0)
       nenv (~> 0.1)
       shellany (~> 0.0)
-    objecthash (1.0.0)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -128,7 +127,6 @@ DEPENDENCIES
   jsender (~> 0.2)
   json (~> 2.0)
   mock_redis
-  objecthash (~> 1.0)
   pry
   puma (~> 3.5)
   rack (~> 1.6)

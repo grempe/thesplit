@@ -65,6 +65,9 @@ configure do
   disable :show_exceptions
   enable :raise_errors
 
+  # Cache-Control for static pages
+  set :static_cache_control, [:public, max_age: 30.days, s_maxage: 24.hours]
+
   ruri = URI.parse(ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379')
   rparam = { host: ruri.host, port: ruri.port, password: ruri.password }
   # Use DB 15 for test so we don't step on dev data
@@ -91,12 +94,14 @@ before do
   # all responses are JSON by default
   content_type :json
 
-  # Caching
+  # Caching Dynamic Pages
   # see also Rack::CacheControlHeaders middleware
-  # which prevents caching of /api/*
+  # which prevents caching of /api/* and
+  # :static_cache_control in config section for
+  # static files.
   last_modified settings.start_time
   etag settings.start_time.to_s
-  expires 1.hour, :public, :must_revalidate, s_maxage: 24.hours
+  expires 1.hour, :public, s_maxage: 24.hours
 
   # Content Security Policy
   # https://content-security-policy.com
@@ -133,6 +138,7 @@ end
 
 # Heartbeat endpoint for monitoring
 get '/heartbeat' do
+  expires 0, :no_cache, s_maxage: 0
   Stats.store('views/heartbeat', count: 1)
   return success_json(timestamp: Time.now.utc.iso8601)
 end

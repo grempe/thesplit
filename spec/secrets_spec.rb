@@ -73,7 +73,7 @@ describe 'Secrets' do
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      key = "secrets:#{blake2sHash}"
+      key = "secrets:#{ObjectHash.hexdigest(blake2sHash)}"
       expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
@@ -117,7 +117,7 @@ describe 'Secrets' do
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      key = "secrets:#{blake2sHash}"
+      key = "secrets:#{ObjectHash.hexdigest(blake2sHash)}"
       expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
@@ -156,7 +156,7 @@ describe 'Secrets' do
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      key = "secrets:#{blake2sHash}"
+      key = "secrets:#{ObjectHash.hexdigest(blake2sHash)}"
       expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',

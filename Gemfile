@@ -6,6 +6,7 @@ gem 'bundler', '1.11.2'
 
 # replace SecureRandom
 gem 'sysrandom', '~> 1.0', require: 'sysrandom/securerandom'
+gem 'objecthash', '~> 1.0'
 
 gem 'json', '~> 2.0'
 gem 'puma', '~> 3.5'

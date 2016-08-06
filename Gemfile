@@ -23,6 +23,8 @@ gem 'redis', '~> 3.3'
 gem 'redis-activesupport', '~> 5.0'
 gem 'redistat', git: 'https://github.com/grempe/redistat.git'
 gem 'jsender', '~> 0.2'
+gem 'objecthash', '~> 1.0', git: 'https://github.com/grempe/objecthash-ruby.git'
+gem 'tierion', '~> 1.0'
 
 group :test, :development do
   gem 'rake'

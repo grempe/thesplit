@@ -84,6 +84,9 @@ configure do
   set :csp_enabled, true
   # CSP : If true, only report, don't actually enforce in the browser
   set :csp_report_only, false
+
+  # Blockchain Anchor SHA256 Hashes of Secrets
+  set :blockchain_anchor_enabled, true
 end
 
 configure :production, :development do
@@ -122,6 +125,13 @@ before do
     header = 'Content-Security-Policy'
     header += '-Report-Only' if settings.csp_report_only?
     response.headers[header] = csp.join(';')
+  end
+
+  if settings.blockchain_anchor_enabled? &&
+     ENV['TIERION_USERNAME'].present? &&
+     ENV['TIERION_PASSWORD'].present? &&
+     !settings.test?
+    $blockchain = Tierion::HashApi::Client.new()
   end
 end
 
@@ -196,11 +206,14 @@ post '/api/v1/secrets' do
     halt 409, error_json('Data conflict, secret with ID already exists', 409)
   end
 
-  $redis.set(key, { boxNonceB64: box_nonce_b64,
-                    boxB64: box_b64,
-                    scryptSaltB64: scrypt_salt_b64 }.to_json)
+  obj = { boxNonceB64: box_nonce_b64,
+          boxB64: box_b64,
+          scryptSaltB64: scrypt_salt_b64 }
 
+  $redis.set(key, obj.to_json)
   $redis.expire(key, settings.secrets_expire_in)
+
+  anchor_hash(blake2s_hash, obj)
 
   return success_json(id: blake2s_hash, createdAt: t.utc.iso8601,
                       expiresAt: t_exp.utc.iso8601)
@@ -282,4 +295,20 @@ end
 # creator.
 def gen_storage_key(id)
   "secrets:#{Digest::SHA256.hexdigest(id)}"
+end
+
+# Store a hash of an object in the Bitcoin Blockchain
+# This will allow later irrefutable confirmation that the object
+# retrieved from the server is unchanged.
+def anchor_hash(id, obj)
+  return nil if $blockchain.blank?
+
+  begin
+    hash = ObjectHash.hexdigest(obj)
+    hash_item = $blockchain.send(hash)
+    $redis.set("blockchain:#{id}", hash_item.to_json)
+    $redis.expire(key, settings.secrets_expire_in)
+  rescue StandardError
+    # no-op
+  end
 end

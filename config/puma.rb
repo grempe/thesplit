@@ -18,8 +18,14 @@
 #
 ###############################################################################
 
-workers Integer(ENV['PUMA_WORKERS'] || 2)
-threads_count = Integer(ENV['PUMA_THREADS'] || 5)
+if ENV['RACK_ENV'] == 'production'
+  workers Integer(ENV['PUMA_WORKERS'] || 2)
+  threads_count = Integer(ENV['PUMA_THREADS'] || 5)
+else
+  workers 1
+  threads_count = 1
+end
+
 threads threads_count, threads_count
 
 preload_app!

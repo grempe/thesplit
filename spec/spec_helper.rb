@@ -17,6 +17,9 @@
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
+# Set the env before requiring Sinatra
+ENV['RACK_ENV'] = 'test'
+
 require './config/environment'
 require 'rspec'
 require 'rack/test'

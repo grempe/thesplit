@@ -301,13 +301,18 @@ end
 # This will allow later irrefutable confirmation that the object
 # retrieved from the server is unchanged.
 def anchor_hash(id, obj)
+  # only set in certain environments
   return nil if $blockchain.blank?
 
   begin
+    key = "blockchain:#{id}"
     hash = ObjectHash.hexdigest(obj)
     hash_item = $blockchain.send(hash)
-    $redis.set("blockchain:#{id}", hash_item.to_json)
-    $redis.expire(key, settings.secrets_expire_in)
+
+    unless hash_item.blank?
+      $redis.set(key, hash_item.to_json)
+      $redis.expire(key, settings.secrets_expire_in)
+    end
   rescue StandardError
     # no-op
   end

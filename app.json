@@ -14,6 +14,16 @@
       "value": "5",
       "required": false
     },
+    "TIERION_USERNAME": {
+      "description": "The username for the Tierion blockchain anchor API",
+      "value": "",
+      "required": false
+    },
+    "TIERION_PASSWORD": {
+      "description": "The password for the Tierion blockchain anchor API",
+      "value": "",
+      "required": false
+    },
     "SITE_NAME": {
       "description": "The name of this web site for use in headers and titles",
       "value": "",
@@ -78,6 +88,8 @@
                 "expire",
                 "shamir",
                 "password",
-                "passphrase"
+                "passphrase",
+                "blockchain",
+                "bitcoin"
               ]
 }

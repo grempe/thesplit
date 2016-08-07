@@ -132,6 +132,10 @@ before do
      ENV['TIERION_PASSWORD'].present? &&
      !settings.test?
     $blockchain = Tierion::HashApi::Client.new()
+
+    if settings.production?
+      $blockchain.create_block_subscription('https://thesplit.is/api/v1/blockchain_callback')
+    end
   end
 end
 
@@ -173,6 +177,17 @@ post '/csp' do
 end
 
 options '/csp' do
+  response.headers['Allow'] = 'POST'
+  200
+end
+
+# Tierion Blockchain Receipt Subscription Callback
+post '/api/v1/blockchain_callback' do
+  logger.info(params)
+  return success_json
+end
+
+options '/api/v1/blockchain_callback' do
   response.headers['Allow'] = 'POST'
   200
 end

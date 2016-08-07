@@ -181,9 +181,43 @@ options '/csp' do
   200
 end
 
-# Tierion Blockchain Receipt Subscription Callback
+
+# Tierion Blockchain Subscription Callback
+#
+# Sample Payload
+#
+# {
+#   "id"=>"57a6b24046f09ed12f13c2b6",
+#   "merkleRoot"=>"59475c7ae20a4fadf106c8820fd36634123ca6d2c9a07fbfc1148cb850c12c93",
+#   "transactionId"=>"609eb7df1bd56b67f7fed347c7696ce3aaa0bc0dc06b3ff3fb2fb6e22d00b1f0",
+#   "startTimestamp"=>"2016-08-07T03:50:00.069Z",
+#   "endTimestamp"=>"2016-08-07T04:00:00.043Z"
+# }
+#
 post '/api/v1/blockchain_callback' do
-  logger.info(params)
+  param :id, String, required: true, min_length: 24, max_length: 24,
+                     format: settings.hex_regex
+
+  param :merkleRoot, String, required: true, min_length: 64, max_length: 64,
+                             format: settings.hex_regex
+
+  param :transactionId, String, required: true, min_length: 64, max_length: 64,
+                                format: settings.hex_regex
+
+  param :startTimestamp, String, required: true
+  param :endTimestamp, String, required: true
+
+  # FIXME : WHen creating a hash item down below, store every pending hash item ID
+  # in a Redis data structure like a set. Then, when this callback is triggered, run
+  # every ID and try to get, and then store locally, the receipt associate with that
+  # hash item. When retrived, remove the ID from that redis set. Not sure how this
+  # is really better than just using a cron like ticker to trigger handling though.
+
+  # Store the object once with index pointers to it
+  $redis.set("blockchain:callback:id:#{params['id']}", params.to_json)
+  $redis.set("blockchain:callback:merkle:#{params['merkleRoot']}", params['id'])
+  $redis.set("blockchain:callback:tx_id:#{params['transactionId']}", params['id'])
+
   return success_json
 end
 
@@ -228,7 +262,7 @@ post '/api/v1/secrets' do
   $redis.set(key, obj.to_json)
   $redis.expire(key, settings.secrets_expire_in)
 
-  anchor_hash(blake2s_hash, obj)
+  blockchain_hash_item(blake2s_hash, obj)
 
   return success_json(id: blake2s_hash, createdAt: t.utc.iso8601,
                       expiresAt: t_exp.utc.iso8601)
@@ -315,20 +349,24 @@ end
 # Store a hash of an object in the Bitcoin Blockchain
 # This will allow later irrefutable confirmation that the object
 # retrieved from the server is unchanged.
-def anchor_hash(id, obj)
+def blockchain_hash_item(sec_id, obj)
   # only set in certain environments
   return nil if $blockchain.blank?
 
   begin
-    key = "blockchain:#{id}"
     hash = ObjectHash.hexdigest(obj)
     hash_item = $blockchain.send(hash)
 
+    # this will always be empty at this point
+    hash_item.delete('receipt')
+
     unless hash_item.blank?
-      $redis.set(key, hash_item.to_json)
-      $redis.expire(key, settings.secrets_expire_in)
+      $redis.set("blockchain:hash_item:id:#{hash_item.id}", hash_item.to_json)
+      $redis.set("blockchain:hash_item:hash:#{hash_item.hash}", hash_item.id)
+      $redis.set("blockchain:hash_item:timestamp:#{hash_item.timestamp}", hash_item.id)
+      $redis.set("blockchain:hash_item:sec_id:#{sec_id}", hash_item.id)
     end
-  rescue StandardError
-    # no-op
+  rescue StandardError => e
+    logger.error("blockchain_hash_item : #{e.class} : #{e.message}")
   end
 end

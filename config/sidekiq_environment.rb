@@ -34,11 +34,11 @@ if ENV['TIERION_ENABLED'] && $blockchain.blank?
 end
 
 Sidekiq.configure_client do |config|
-  config.redis = { namespace: 'sidekiq' }
+  config.redis = { url: ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379', namespace: 'sidekiq' }
 end
 
 Sidekiq.configure_server do |config|
-  config.redis = { namespace: 'sidekiq' }
+  config.redis = { url: ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379', namespace: 'sidekiq' }
   config.on(:startup) do
     schedule = YAML.load_file(File.expand_path('../../config/sidekiq_scheduler.yml', __FILE__))
     Sidekiq.schedule = schedule

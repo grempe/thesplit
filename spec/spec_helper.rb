@@ -24,6 +24,10 @@ require './config/environment'
 require 'rspec'
 require 'rack/test'
 
+# turn loggin off in test env
+require 'sidekiq/testing'
+Sidekiq::Logging.logger = nil
+
 RSpec.configure do |config|
   config.include Rack::Test::Methods
 

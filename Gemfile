@@ -20,10 +20,13 @@ gem 'sinatra-cross_origin', '~> 0.3', require: 'sinatra/cross_origin'
 
 gem 'activesupport', '~> 5.0'
 gem 'redis', '~> 3.3'
+gem 'redis-namespace', '~> 1.5'
 gem 'redis-activesupport', '~> 5.0'
 gem 'redistat', git: 'https://github.com/grempe/redistat.git'
+gem 'sidekiq', '~> 4.1'
+gem 'sidekiq-scheduler', '~> 2.0'
 gem 'jsender', '~> 0.2'
-gem 'objecthash', '>= 1.0.2'
+gem 'objecthash', '~> 1.0', '>= 1.0.2'
 gem 'tierion', '~> 1.1'
 
 group :test, :development do

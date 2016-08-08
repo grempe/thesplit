@@ -1,0 +1,15 @@
+# See : https://github.com/moove-it/sidekiq-scheduler
+# See : http://www.crontab-generator.org/
+
+# Receipts are generated at Tierion at each 10 minute
+# interval (0, 10, 20, 30, 40, 50). So run one minute after that
+# to pick up most current receipts.
+BlockchainGetReceiptsWorker:
+  cron: "01,11,21,31,41,51 * * * *"
+  description: "Check for new blockchain receipts and store them locally."
+
+# Check if any receipts that were queued have since been confirmed
+# as having the Merkle root stored in a confirmed BTC transaction.
+BlockchainGetReceiptConfirmationsWorker:
+  cron: "*/5 * * * *"
+  description: "Check for new blockchain receipt confirmations and store them locally."

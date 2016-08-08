@@ -77,7 +77,7 @@ describe 'Secrets' do
       expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
-        blake2sHash: blake2sHash,
+        id: blake2sHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
@@ -121,7 +121,7 @@ describe 'Secrets' do
       expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
-        blake2sHash: blake2sHash,
+        id: blake2sHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
@@ -160,7 +160,7 @@ describe 'Secrets' do
       expect($redis.get(key)).to be_nil
 
       post '/api/v1/secrets',
-        blake2sHash: blake2sHash,
+        id: blake2sHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64

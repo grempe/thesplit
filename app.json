@@ -14,6 +14,11 @@
       "value": "5",
       "required": false
     },
+    "TIERION_ENABLED": {
+      "description": "Should blockchain anchor services be enabled?",
+      "value": true,
+      "required": true
+    },
     "TIERION_USERNAME": {
       "description": "The username for the Tierion blockchain anchor API",
       "value": "",
@@ -21,6 +26,11 @@
     },
     "TIERION_PASSWORD": {
       "description": "The password for the Tierion blockchain anchor API",
+      "value": "",
+      "required": false
+    },
+    "TIERION_SUBSCRIPTION_CALLBACK_URI": {
+      "description": "The Tierion Hash API Subscription Callback URI to receive payloads",
       "value": "",
       "required": false
     },

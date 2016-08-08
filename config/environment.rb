@@ -25,12 +25,14 @@ Bundler.require(:default)
 Bundler.require(Sinatra::Base.environment)
 
 require 'active_support/cache/redis_store'
-require 'active_support/core_ext/object/blank.rb'
+require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/numeric'
 require 'active_support/core_ext/integer/time'
 
-require './app/stats.rb'
-require './app/secrets.rb'
+require 'sidekiq/api'
+
+Dir[File.expand_path('../../app/*.rb', __FILE__)].each do |file| load file; end
+Dir[File.expand_path('../../app/workers/*.rb', __FILE__)].each do |file| load file; end
 
 #################################################
 # Middleware - Compress Responses

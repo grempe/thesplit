@@ -24,7 +24,6 @@ class BlockchainGetReceiptConfirmationsWorker
       # check for confirmations
       if receipt.valid?
         confirmations = receipt.confirmations
-        logger.debug(confirmations.inspect)
       else
         raise "Stored receipt for server_hash_id '#{server_hash_id}' is invalid"
       end

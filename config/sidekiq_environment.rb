@@ -1,5 +1,12 @@
 # This is an environment file that is to be used when loading the
 # Sidekiq Asynch job queue. It loads only what the workers need.
+
+# Start sidekiq manually with:
+# bundle exec sidekiq -c 5 -v -r './config/sidekiq_environment.rb
+
+# Heroku note. This will need to be manually started at least once:
+# heroku ps:scale worker=1
+
 require 'json'
 require 'redis'
 require 'redis-namespace'
@@ -24,6 +31,10 @@ end
 
 if ENV['TIERION_ENABLED'] && $blockchain.blank?
   raise 'Exiting. TIERION_ENABLED is true, but $blockchain is nil. Bad auth?'
+end
+
+Sidekiq.configure_client do |config|
+  config.redis = { uri: redis_uri, namespace: 'sidekiq' }
 end
 
 Sidekiq.configure_server do |config|

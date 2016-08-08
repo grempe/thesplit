@@ -89,7 +89,7 @@ configure do
 
   # namespace Sidekiq
   Sidekiq.configure_client do |config|
-    config.redis = { uri: redis_uri, namespace: 'sidekiq' }
+    config.redis = { url: redis_uri, namespace: 'sidekiq' }
   end
 
   # Content Security Policy (CSP)

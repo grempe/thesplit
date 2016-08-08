@@ -70,7 +70,7 @@ configure do
 
   # REDIS
 
-  redis_uri = URI.parse(ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379')
+  redis_uri = URI.parse(ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
   rparam = { host: redis_uri.host, port: redis_uri.port, password: redis_uri.password }
 
   redis_client = if settings.test?

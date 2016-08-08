@@ -18,7 +18,7 @@ Dir[File.expand_path('../../app/workers/*.rb', __FILE__)].each do |file|
   load file
 end
 
-redis_uri = URI.parse(ENV['REDISCLOUD_URL'] ||= 'redis://127.0.0.1:6379')
+redis_uri = URI.parse(ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
 $redis = Redis.new(uri: redis_uri)
 
 if $redis.blank?

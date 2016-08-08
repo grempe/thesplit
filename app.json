@@ -4,6 +4,11 @@
   "repository": "https://github.com/thesplit/thesplit",
   "website": "https://thesplit.is/",
   "env": {
+    "REDIS_URL": {
+      "description": "The full Redis URL connection string. You may need to copy this from an add-on vendor environment variable.",
+      "value": "",
+      "required": true
+    },
     "PUMA_WORKERS": {
       "description": "How many Puma server workers to start",
       "value": "2",

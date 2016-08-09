@@ -31,6 +31,7 @@ require 'active_support/core_ext/integer/time'
 
 require 'sidekiq/api'
 require 'sidekiq/web'
+require 'sidekiq-scheduler/web'
 
 require './helpers/application_helper'
 require './controllers/application_controller'

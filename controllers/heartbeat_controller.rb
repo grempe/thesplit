@@ -1,0 +1,32 @@
+###############################################################################
+#
+# thesplit - An API server to support the secure sharing of secrets.
+# Copyright (c) 2016  Glenn Rempe
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+
+class HeartbeatController < ApplicationController
+  get '/' do
+    expires 0, :no_cache, s_maxage: 0
+    Stats.store('views/heartbeat', count: 1)
+    return success_json(timestamp: Time.now.utc.iso8601)
+  end
+
+  options '/' do
+    response.headers['Allow'] = 'HEAD,GET'
+    200
+  end
+end

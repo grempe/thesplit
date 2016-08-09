@@ -20,7 +20,7 @@
 # Set the env before requiring Sinatra
 ENV['RACK_ENV'] = 'test'
 
-require './config/environment'
+require './config/boot'
 require 'rspec'
 require 'rack/test'
 

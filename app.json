@@ -19,6 +19,16 @@
       "value": "5",
       "required": false
     },
+    "SIDEKIQ_USERNAME": {
+      "description": "The Basic Auth username for /sidekiq admin page.",
+      "value": "",
+      "required": true
+    },
+    "SIDEKIQ_PASSWORD": {
+      "description": "The Basic Auth password for /sidekiq admin page.",
+      "value": "",
+      "required": true
+    },
     "TIERION_ENABLED": {
       "description": "Should blockchain anchor services be enabled?",
       "value": true,

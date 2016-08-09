@@ -14,7 +14,7 @@ gem 'rack-contrib', '~> 1.4', require: 'rack/contrib'
 gem 'rack-attack', '~> 4.4', require: 'rack/attack'
 gem 'rack-attack-rate-limit', '~> 1.1', require: 'rack/attack/rate-limit'
 gem 'rack-robustness', '~> 1.1', require: 'rack/robustness'
-gem 'sinatra', '~> 1.4'
+gem 'sinatra', '~> 1.4', require: 'sinatra/base'
 gem 'sinatra-param', '~> 1.4', require: 'sinatra/param'
 gem 'sinatra-cross_origin', '~> 0.3', require: 'sinatra/cross_origin'
 
@@ -27,7 +27,7 @@ gem 'sidekiq', '~> 4.1'
 gem 'sidekiq-scheduler', '~> 2.0'
 gem 'jsender', '~> 0.2'
 gem 'objecthash', '~> 1.0', '>= 1.0.2'
-gem 'tierion', '~> 1.1'
+gem 'tierion', '~> 1.3'
 
 group :test, :development do
   gem 'rake'

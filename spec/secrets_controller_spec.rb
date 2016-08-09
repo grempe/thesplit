@@ -20,43 +20,14 @@
 
 require 'spec_helper'
 
-describe 'root' do
-
+describe SecretsController do
   def app
-    Sinatra::Application
-  end
-
-  context 'GET /' do
-    it 'returns expected result' do
-      get '/'
-
-      expect(last_response.headers['Content-Type']).to eq('text/html;charset=utf-8')
-      expect(last_response.body).to match(/thesplit.is/)
-      expect(last_response.status).to eq 200
-    end
+    described_class
   end
 
   context 'OPTIONS /' do
     it 'returns expected result' do
       options '/'
-
-      expect(last_response.headers['Allow']).to eq('HEAD,GET')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
-    end
-  end
-end
-
-describe 'Secrets' do
-  def app
-    Sinatra::Application
-  end
-
-  context 'OPTIONS /api/v1/secrets' do
-    it 'returns expected result' do
-      options '/api/v1/secrets'
 
       expect(last_response.headers['Allow']).to eq('POST')
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -66,7 +37,7 @@ describe 'Secrets' do
     end
   end
 
-  context 'POST /api/v1/secrets' do
+  context 'POST /' do
     it 'stores a secret with valid data' do
       blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
@@ -76,7 +47,7 @@ describe 'Secrets' do
       key = "secrets:#{Digest::SHA256.hexdigest(blake2sHash)}"
       expect($redis.get(key)).to be_nil
 
-      post '/api/v1/secrets',
+      post '/',
         id: blake2sHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
@@ -98,9 +69,9 @@ describe 'Secrets' do
     end
   end
 
-  context 'OPTIONS /api/v1/secrets/:id' do
+  context 'OPTIONS /:id' do
     it 'returns expected result' do
-      options '/api/v1/secrets/e8a3fcaf610745d6dae5df8db67bd264'
+      options '/e8a3fcaf610745d6dae5df8db67bd264'
 
       expect(last_response.headers['Allow']).to eq('GET,DELETE')
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -110,7 +81,7 @@ describe 'Secrets' do
     end
   end
 
-  context 'GET /api/v1/secrets/:id' do
+  context 'GET /:id' do
     it 'retrieves a secret' do
       blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
@@ -120,7 +91,7 @@ describe 'Secrets' do
       key = "secrets:#{Digest::SHA256.hexdigest(blake2sHash)}"
       expect($redis.get(key)).to be_nil
 
-      post '/api/v1/secrets',
+      post '/',
         id: blake2sHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
@@ -132,7 +103,7 @@ describe 'Secrets' do
                                         'boxB64' => boxB64,
                                         'scryptSaltB64' => scryptSaltB64})
 
-      get "/api/v1/secrets/#{blake2sHash}"
+      get "/#{blake2sHash}"
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -149,7 +120,7 @@ describe 'Secrets' do
     end
   end
 
-  context 'DELETE /api/v1/secrets/:id' do
+  context 'DELETE /:id' do
     it 'deletes a secret' do
       blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
@@ -159,7 +130,7 @@ describe 'Secrets' do
       key = "secrets:#{Digest::SHA256.hexdigest(blake2sHash)}"
       expect($redis.get(key)).to be_nil
 
-      post '/api/v1/secrets',
+      post '/',
         id: blake2sHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
@@ -171,7 +142,7 @@ describe 'Secrets' do
                                         'boxB64' => boxB64,
                                         'scryptSaltB64' => scryptSaltB64})
 
-      delete "/api/v1/secrets/#{blake2sHash}"
+      delete "/#{blake2sHash}"
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')

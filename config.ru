@@ -37,86 +37,47 @@ end
 # Middleware - Rack::Attack - Rate Limiting
 #################################################
 
-class Rack::Attack
-  # LEARN MORE
-  #
-  # Rack::Attack
-  # See : https://github.com/kickstarter/rack-attack
-  # See : https://github.com/kickstarter/rack-attack/issues/102
-  # See : https://gist.github.com/ktheory/5087320
-
-  # Configure Cache
-  #
-  # Note: The store is only used for throttling (not blacklisting and
-  # whitelisting). It must implement .increment and .write like
-  # ActiveSupport::Cache::Store
-  redis_url = ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379'
-  Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(redis_url)
-
-  # Whitelist all requests from localhost
-  # (blacklist & throttles are skipped)
-  #
-  # if ENV['RACK_ENV'] == 'production'
-  #   whitelist('allow from localhost') do |req|
-  #    '127.0.0.1' == req.ip || '::1' == req.ip
-  #   end
-  # end
-
-  # Block requests from 1.2.3.4
-  # Rack::Attack.blacklist('block 1.2.3.4') do |req|
-  #   # Requests are blocked if the return value is truthy
-  #   '1.2.3.4' == req.ip
-  # end
-
-  # Block logins from a bad user agent
-  # Rack::Attack.blacklist('block bad UA logins') do |req|
-  #   req.path == '/login' && req.post? && req.user_agent == 'BadUA'
-  # end
-
-  throttle('sidekiq/req/ip', limit: 180, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/sidekiq')
-  end
-
-  throttle('static/req/ip', limit: 180, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/css', '/js', '/favicon.ico', '/humans.txt', '/robots.txt')
-  end
-
-  throttle('api/req/ip', limit: 180, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/api')
-  end
-
-  throttle('heartbeat/req/ip', limit: 10, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/heartbeat')
-  end
-
-  throttle('csp/req/ip', limit: 10, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/csp')
-  end
-
-  throttle('blockchain/req/ip', limit: 10, period: 1.minute) do |req|
-    req.ip if req.path.start_with?('/blockchain_callback')
-  end
-end
-
 use Rack::Attack
 
-#################################################
-# Middleware - Rack::Attack::RateLimit - Headers
-#################################################
+redis_url = ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379'
+Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(redis_url)
 
-# See : https://github.com/jbyck/rack-attack-rate-limit
-# Takes an array of names of Rack::Attack.throttle instances
-# Places header like the following in all non-throttled requests:
-#
-#   X-Ratelimit-Limit: 10
-#   X-Ratelimit-Remaining: 8
+Rack::Attack.throttle('sidekiq/req/ip', limit: 180, period: 1.minute) do |req|
+  req.ip if req.path.start_with?('/sidekiq')
+end
 
-use Rack::Attack::RateLimit, throttle: ['static/req/ip',
-                                        'api/req/ip',
-                                        'heartbeat/req/ip',
-                                        'csp/req/ip',
-                                        'blockchain/req/ip',
-                                        'sidekiq/req/ip']
+Rack::Attack.throttle('static/req/ip', limit: 180, period: 1.minute) do |req|
+  req.ip if req.path.start_with?('/css', '/js', '/favicon.ico', '/humans.txt', '/robots.txt')
+end
+
+Rack::Attack.throttle('api/req/ip', limit: 180, period: 1.minute) do |req|
+  req.ip if req.path.start_with?('/api')
+end
+
+Rack::Attack.throttle('heartbeat/req/ip', limit: 10, period: 1.minute) do |req|
+  req.ip if req.path.start_with?('/heartbeat')
+end
+
+Rack::Attack.throttle('csp/req/ip', limit: 10, period: 1.minute) do |req|
+  req.ip if req.path.start_with?('/csp')
+end
+
+Rack::Attack.throttle('blockchain/req/ip', limit: 10, period: 1.minute) do |req|
+  req.ip if req.path.start_with?('/blockchain_callback')
+end
+
+Rack::Attack.throttled_response = lambda do |env|
+    now = Time.now
+    match_data = env['rack.attack.match_data']
+
+    headers = {
+      'X-RateLimit-Limit' => match_data[:limit].to_s,
+      'X-RateLimit-Remaining' => '0',
+      'X-RateLimit-Reset' => (now + (match_data[:period] - now.to_i % match_data[:period])).to_s
+    }
+
+    [ 429, headers, ["Throttled\n"]]
+  end
 
 #################################################
 # Middleware - Rack::CacheControlHeaders

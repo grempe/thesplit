@@ -67,9 +67,7 @@ GEM
       slop (~> 3.4)
     puma (3.6.0)
     rack (1.6.4)
-    rack-attack (4.4.1)
-      rack
-    rack-attack-rate-limit (1.1.0)
+    rack-attack (5.0.0)
       rack
     rack-contrib (1.4.0)
       git-version-bump (~> 0.15)
@@ -156,8 +154,7 @@ DEPENDENCIES
   pry
   puma (~> 3.5)
   rack (~> 1.6)
-  rack-attack (~> 4.4)
-  rack-attack-rate-limit (~> 1.1)
+  rack-attack (~> 5.0)
   rack-contrib (~> 1.4)
   rack-robustness (~> 1.1)
   rack-test

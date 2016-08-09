@@ -32,6 +32,9 @@ require 'active_support/core_ext/integer/time'
 require 'sidekiq/api'
 require 'sidekiq/web'
 
+require './helpers/application_helper'
+require './controllers/application_controller'
+
 Dir.glob('./{helpers,controllers,models,workers}/*.rb').each do |file|
   require file
 end

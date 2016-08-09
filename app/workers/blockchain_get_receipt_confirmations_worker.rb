@@ -28,14 +28,14 @@ class BlockchainGetReceiptConfirmationsWorker
         raise "Stored receipt for server_hash_id '#{server_hash_id}' is invalid"
       end
 
-      if confirmations.present? && confirmations['BTCOpReturn']
-        # store the confirmation alongside the hash item receipt
-        # store the timestamp it was confirmed as the value
-        $redis.hset("blockchain:id:#{server_hash_id}", 'confirmed', Time.now.utc.iso8601)
+      next unless confirmations.present? && confirmations['BTCOpReturn']
 
-        # remove this ID from the confirmation queue
-        $redis.srem('blockchain:receipt_confirmations_pending_queue', server_hash_id)
-      end
+      # store the confirmation alongside the hash item receipt
+      # store the timestamp it was confirmed as the value
+      $redis.hset("blockchain:id:#{server_hash_id}", 'confirmed', Time.now.utc.iso8601)
+
+      # remove this ID from the confirmation queue
+      $redis.srem('blockchain:receipt_confirmations_pending_queue', server_hash_id)
     end
   end
 end

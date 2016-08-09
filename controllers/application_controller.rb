@@ -162,6 +162,17 @@ class ApplicationController < Sinatra::Base
       header += '-Report-Only' if settings.csp_report_only?
       response.headers[header] = csp.join(';')
     end
+
+    # Add headers for all unthrottled requests also
+    # See Rack::Attack in config.ru
+    if request.env['rack.attack.throttle_data'].present?
+      now = Time.now
+      key = request.env['rack.attack.throttle_data'].keys.first
+      throttle_data = request.env['rack.attack.throttle_data'][key]
+      response.headers['X-RateLimit-Limit'] = throttle_data[:limit].to_s
+      response.headers['X-RateLimit-Remaining'] = (throttle_data[:limit].to_i - throttle_data[:count].to_i).to_s
+      response.headers['X-RateLimit-Reset'] = (now + (throttle_data[:period] - now.to_i % throttle_data[:period])).to_s
+    end
   end
 
   get '/' do

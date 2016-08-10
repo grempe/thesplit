@@ -20,7 +20,6 @@
 
 class HeartbeatController < ApplicationController
   get '/' do
-    expires 0, :no_cache, s_maxage: 0
     Stats.store('views/heartbeat', count: 1)
     return success_json(timestamp: Time.now.utc.iso8601)
   end

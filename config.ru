@@ -113,6 +113,7 @@ module Rack
 end
 
 # Set strict no-cache headers for these endpoints
+use Rack::CacheControlHeaders, '/sidekiq'
 use Rack::CacheControlHeaders, '/heartbeat'
 use Rack::CacheControlHeaders, '/csp'
 use Rack::CacheControlHeaders, '/blockchain_callback'

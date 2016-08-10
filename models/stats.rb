@@ -23,6 +23,9 @@
 class Stats
   include Redistat::Model
 
+  # Override the use of 'Stats' in the redis key
+  scope 'stats'
+
   depth :sec
   expire sec: 60.minutes.to_i,
          min: 24.hours.to_i,

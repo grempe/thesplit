@@ -53,7 +53,7 @@ GEM
     lumberjack (1.0.10)
     method_source (0.8.2)
     minitest (5.9.0)
-    mock_redis (0.16.1)
+    mock_redis (0.17.0)
     multi_json (1.12.1)
     multi_xml (0.5.5)
     nenv (0.3.0)
@@ -149,7 +149,7 @@ DEPENDENCIES
   guard-rspec
   jsender (~> 0.2)
   json (~> 2.0)
-  mock_redis
+  mock_redis (~> 0.17)
   objecthash (~> 1.0, >= 1.0.2)
   pry
   puma (~> 3.5)

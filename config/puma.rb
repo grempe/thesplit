@@ -20,7 +20,7 @@
 
 if ENV['RACK_ENV'] == 'production'
   workers Integer(ENV['PUMA_WORKERS'] || 2)
-  threads_count = Integer(ENV['PUMA_THREADS'] || 5)
+  threads_count = Integer(ENV['PUMA_THREADS'] || 4)
 else
   workers 1
   threads_count = 1

@@ -126,6 +126,13 @@ use Rack::CacheControlHeaders, '/api'
 use ::Rack::NestedParams
 use ::Rack::PostBodyContentTypeParser
 
+
+#################################################
+# Middleware - Rollbar Exception Logging
+#################################################
+require 'rollbar/middleware/sinatra'
+use Rollbar::Middleware::Sinatra
+
 #################################################
 # Routes
 #################################################

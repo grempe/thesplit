@@ -89,6 +89,9 @@
   "addons": [
     {
       "plan": "rediscloud:30"
+    },
+    {
+      "plan": "rollbar:free"
     }
   ],
   "keywords": [ "thesplit",

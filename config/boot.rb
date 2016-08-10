@@ -39,3 +39,12 @@ require './controllers/application_controller'
 Dir.glob('./{helpers,controllers,models,workers}/*.rb').each do |file|
   require file
 end
+
+Rollbar.configure do |config|
+  config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+  config.disable_monkey_patch = true
+  config.use_sidekiq 'queue' => 'default'
+end
+
+# Security : scrub additional fields from Rollbar logs
+Rollbar.configuration.scrub_fields |= [:boxNonceB64, :boxB64, :scryptSaltB64]

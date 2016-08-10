@@ -12,6 +12,7 @@ require 'redis'
 require 'redis-namespace'
 require 'sidekiq'
 require 'sidekiq-scheduler'
+require 'rollbar'
 require 'tierion'
 
 Dir.glob('./workers/*.rb').each { |file| require file }
@@ -52,4 +53,9 @@ if ENV['TIERION_ENABLED'] && ENV['RACK_ENV'] == 'production'
   rescue StandardError
     # no-op : duplicate registration can throw exception
   end
+end
+
+Rollbar.configure do |config|
+  config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+  config.use_sidekiq 'queue' => 'default'
 end

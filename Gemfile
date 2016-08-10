@@ -27,6 +27,7 @@ gem 'sidekiq-scheduler', '~> 2.0'
 gem 'jsender', '~> 0.2'
 gem 'objecthash', '~> 1.0', '>= 1.0.2'
 gem 'tierion', '~> 1.3'
+gem 'rollbar', '~> 2.12'
 
 group :test, :development do
   gem 'rake'

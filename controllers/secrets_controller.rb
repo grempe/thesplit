@@ -108,7 +108,8 @@ class SecretsController < ApplicationController
     # find and revoke the token, which will also destroy any cubbyhole data
     vault_token = Vault.logical.read(vault_index_key)
     if vault_token && vault_token.data.present?
-      Vault.auth_token.revoke_orphan(vault_token.data[:token])
+      # FIXME : Revoke token
+      # Vault.auth_token.revoke_orphan(vault_token.data[:token])
     end
 
     # deleting the index that let us find the token
@@ -159,7 +160,7 @@ class SecretsController < ApplicationController
              policies: ['default'] }
 
     Vault.with_retries(Vault::HTTPError, attempts: 3) do
-      t = Vault.auth_token.create_orphan(opts)
+      t = Vault.auth_token.create(opts)
       return t.auth.client_token
     end
   end

@@ -115,6 +115,11 @@ describe SecretsController do
       expect(resp['data']['scryptSaltB64']).to eq(scryptSaltB64)
 
       expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
+
+      # the second time should fail
+      get "/#{blake2sHash}"
+
+      expect(last_response.status).to eq 404
     end
   end
 

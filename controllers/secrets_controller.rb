@@ -134,6 +134,8 @@ class SecretsController < ApplicationController
     # Retrive the one-time use token using the app token
     vault_token = Vault.logical.read(vault_index_key)
 
+    raise Sinatra::NotFound if vault_token.blank? || vault_token.data.blank?
+
     # Retrieve secret data using one-time use token
     Vault.client.with_token(vault_token.data[:token]) do |c|
       vault_secret = c.logical.read("cubbyhole/#{server_hash_id}")

@@ -99,6 +99,7 @@ describe SecretsController do
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
+      # has a one-time use token
       expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
       get "/#{blake2sHash}"

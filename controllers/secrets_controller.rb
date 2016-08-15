@@ -74,10 +74,13 @@ class SecretsController < ApplicationController
     # store the value of the one time token in a place we can find it
     Vault.logical.write(vault_index_key, { token: one_time_token })
 
-    # store secret data using the one-time-use token
-    Vault.client.with_token(one_time_token) do |c|
-      c.logical.write("cubbyhole/#{server_hash_id}", obj)
-    end
+    # Store secret data using the one-time-use token
+    # Instantiate a new Vault::Client in order to auth with the one-time token
+    vc = Vault::Client.new
+    # token num_uses - 1
+    vc.auth.token(one_time_token)
+    # token num_uses - 1
+    vc.logical.write("cubbyhole/#{server_hash_id}", obj)
 
     # Generate a hash of the entire object stored in the DB for this secret
     # and send it to the blockchain for storage. Send the server_hash_id as
@@ -107,10 +110,15 @@ class SecretsController < ApplicationController
 
     # find and revoke the token, which will also destroy any cubbyhole data
     vault_token = Vault.logical.read(vault_index_key)
-    if vault_token && vault_token.data.present?
-      # FIXME : Revoke token
-      # Vault.auth_token.revoke_orphan(vault_token.data[:token])
-    end
+
+    raise Sinatra::NotFound if vault_token.blank? || vault_token.data.blank?
+
+    vc = Vault::Client.new
+    # token num_uses - 1
+    vc.auth.token(vault_token.data[:token])
+    # token num_uses - 1
+    # revocation of token also destroys any cubbyhole secrets
+    vc.auth_token.revoke_self
 
     # deleting the index that let us find the token
     Vault.logical.delete(vault_index_key)
@@ -136,10 +144,13 @@ class SecretsController < ApplicationController
 
     raise Sinatra::NotFound if vault_token.blank? || vault_token.data.blank?
 
-    # Retrieve secret data using one-time use token
-    Vault.client.with_token(vault_token.data[:token]) do |c|
-      vault_secret = c.logical.read("cubbyhole/#{server_hash_id}")
-    end
+    # Instantiate a new Vault::Client in order to auth with the one-time token
+    vc = Vault::Client.new
+    # token num_uses - 1
+    vc.auth.token(vault_token.data[:token])
+    # token num_uses - 1
+    # one-time token private cubbyhole
+    vault_secret = vc.logical.read("cubbyhole/#{server_hash_id}")
 
     # cleanup the index with the cubbyhole token
     Vault.logical.delete(vault_index_key)
@@ -155,10 +166,11 @@ class SecretsController < ApplicationController
   end
 
   def vault_token_24h_1x
+    # num_uses is 4 since we auth, write, auth, read|delete in normal flow
     opts = { renewable: false,
              ttl: '24h',
              explicit_max_ttl: '24h',
-             num_uses: 1,
+             num_uses: 4,
              policies: ['default'] }
 
     Vault.with_retries(Vault::HTTPError, attempts: 3) do

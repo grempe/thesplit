@@ -2,10 +2,14 @@
 # See : http://www.crontab-generator.org/
 
 # Receipts are generated at Tierion at each 10 minute
-# interval (0, 10, 20, 30, 40, 50). So run one minute after that
-# to pick up most current receipts.
+# interval (0, 10, 20, 30, 40, 50). Since Tierion could in
+# practice take a few minutes to process after each 10 min interval
+# run this five minutes after their intervals. This is really a
+# sweeper cleanup-process to make sure we get everything. The real-time
+# processing should occur when Tierion sends their callback when the 10
+# minute blocks are processed and ready for pickup.
 BlockchainGetReceiptsWorker:
-  cron: "01,11,21,31,41,51 * * * *"
+  cron: "05,15,25,35,45,55 * * * *"
   description: "Check for new blockchain receipts and store them locally."
 
 # Check if any receipts that were queued have since been confirmed

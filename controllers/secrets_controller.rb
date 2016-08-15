@@ -50,27 +50,34 @@ class SecretsController < ApplicationController
     # learn something about who has held that key ID. A small step
     # towards protecting the anonymity of the creator.
     #
-    client_hash_id  = params['id']
-    server_hash_id  = Digest::SHA256.hexdigest(client_hash_id)
+    client_hash_id = params['id']
+    server_hash_id = Digest::SHA256.hexdigest(client_hash_id)
+    vault_index_key = "secret/#{server_hash_id}"
 
     scrypt_salt_b64 = params['scryptSaltB64']
-    box_nonce_b64   = params['boxNonceB64']
-    box_b64         = params['boxB64']
+    box_nonce_b64 = params['boxNonceB64']
+    box_b64 = params['boxB64']
 
     t     = Time.now
     t_exp = t + settings.secrets_expire_in
-    key   = secret_storage_redis_key(server_hash_id)
-
-    unless $redis.get(key).blank?
-      halt 409, error_json('Data conflict, secret with ID already exists', 409)
-    end
 
     obj = { boxNonceB64: box_nonce_b64,
             boxB64: box_b64,
             scryptSaltB64: scrypt_salt_b64 }
 
-    $redis.set(key, obj.to_json)
-    $redis.expire(key, settings.secrets_expire_in)
+    if Vault.logical.read(vault_index_key).present?
+      halt 409, error_json('Data conflict, secret with ID already exists', 409)
+    end
+
+    one_time_token = vault_token_24h_1x
+
+    # store the value of the one time token in a place we can find it
+    Vault.logical.write(vault_index_key, { token: one_time_token })
+
+    # store secret data using the one-time-use token
+    Vault.client.with_token(one_time_token) do |c|
+      c.logical.write("cubbyhole/#{server_hash_id}", obj)
+    end
 
     # Generate a hash of the entire object stored in the DB for this secret
     # and send it to the blockchain for storage. Send the server_hash_id as
@@ -95,8 +102,17 @@ class SecretsController < ApplicationController
                        format: settings.hex_regex
 
     client_hash_id = params['id']
-    key = secret_storage_redis_key(Digest::SHA256.hexdigest(client_hash_id))
-    $redis.del(key)
+    server_hash_id = Digest::SHA256.hexdigest(client_hash_id)
+    vault_index_key = "secret/#{server_hash_id}"
+
+    # find and revoke the token, which will also destroy any cubbyhole data
+    vault_token = Vault.logical.read(vault_index_key)
+    if vault_token && vault_token.data.present?
+      Vault.auth_token.revoke_orphan(vault_token.data[:token])
+    end
+
+    # deleting the index that let us find the token
+    Vault.logical.delete(vault_index_key)
 
     return success_json
   end
@@ -109,26 +125,42 @@ class SecretsController < ApplicationController
                        format: settings.hex_regex
 
     client_hash_id = params['id']
-    key = secret_storage_redis_key(Digest::SHA256.hexdigest(client_hash_id))
-    sec_json = $redis.get(key)
+    server_hash_id = Digest::SHA256.hexdigest(client_hash_id)
 
-    raise Sinatra::NotFound if sec_json.blank?
+    vault_secret = nil
+    vault_index_key = "secret/#{server_hash_id}"
 
-    begin
-      sec = JSON.parse(sec_json)
-    rescue StandardError
-      halt 500, error_json('Fatal error, corrupt data, JSON', 500)
-    ensure
-      # Always delete found data immediately on first view,
-      # even if the parse fails.
-      $redis.del(key)
+    # Retrive the one-time use token using the app token
+    vault_token = Vault.logical.read(vault_index_key)
+
+    # Retrieve secret data using one-time use token
+    Vault.client.with_token(vault_token.data[:token]) do |c|
+      vault_secret = c.logical.read("cubbyhole/#{server_hash_id}")
     end
 
-    return success_json(sec)
+    # cleanup the index with the cubbyhole token
+    Vault.logical.delete(vault_index_key)
+
+    raise Sinatra::NotFound if vault_secret.blank? || vault_secret.data.blank?
+
+    return success_json(vault_secret.data)
   end
 
   options '/:id' do
     response.headers['Allow'] = 'GET,DELETE'
     200
+  end
+
+  def vault_token_24h_1x
+    opts = { renewable: false,
+             ttl: '24h',
+             explicit_max_ttl: '24h',
+             num_uses: 1,
+             policies: ['default'] }
+
+    Vault.with_retries(Vault::HTTPError, attempts: 3) do
+      t = Vault.auth_token.create_orphan(opts)
+      return t.auth.client_token
+    end
   end
 end

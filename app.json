@@ -19,6 +19,16 @@
       "value": "5",
       "required": false
     },
+    "VAULT_ADDR": {
+      "description": "The connection URI for the Hashicorp Vault server",
+      "value": "",
+      "required": true
+    },
+    "VAULT_TOKEN": {
+      "description": "The authentication token for the Hashicorp Vault server",
+      "value": "",
+      "required": true
+    },
     "SIDEKIQ_USERNAME": {
       "description": "The Basic Auth username for /sidekiq admin page.",
       "value": "",

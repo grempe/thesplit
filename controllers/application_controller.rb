@@ -204,8 +204,4 @@ class ApplicationController < Sinatra::Base
     Stats.store('views/error/500', count: 1)
     halt 500, error_json('Server Error', 500)
   end
-
-  def secret_storage_redis_key(id)
-    "secrets:#{id}"
-  end
 end

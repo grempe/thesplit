@@ -38,14 +38,17 @@ describe SecretsController do
   end
 
   context 'POST /' do
+    before do
+      Vault.logical.delete("secret/#{Digest::SHA256.hexdigest('e8a3fcaf610745d6dae5df8db67bd264')}")
+    end
+
     it 'stores a secret with valid data' do
       blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      key = "secrets:#{Digest::SHA256.hexdigest(blake2sHash)}"
-      expect($redis.get(key)).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
 
       post '/',
         id: blake2sHash,
@@ -61,11 +64,7 @@ describe SecretsController do
       expect(resp['status']).to eq('success')
       expect(resp['data'].keys).to eq(%w(id createdAt expiresAt))
 
-      redis_value = $redis.get(key)
-      redis_value_parsed = JSON.parse(redis_value)
-      expect(redis_value_parsed).to eq({'boxNonceB64' => boxNonceB64,
-                                        'boxB64' => boxB64,
-                                        'scryptSaltB64' => scryptSaltB64})
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
     end
   end
 
@@ -82,14 +81,17 @@ describe SecretsController do
   end
 
   context 'GET /:id' do
+    before do
+      Vault.logical.delete("secret/#{Digest::SHA256.hexdigest('e8a3fcaf610745d6dae5df8db67bd264')}")
+    end
+
     it 'retrieves a secret' do
       blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      key = "secrets:#{Digest::SHA256.hexdigest(blake2sHash)}"
-      expect($redis.get(key)).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
 
       post '/',
         id: blake2sHash,
@@ -97,11 +99,7 @@ describe SecretsController do
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
-      redis_value = $redis.get(key)
-      redis_value_parsed = JSON.parse(redis_value)
-      expect(redis_value_parsed).to eq({'boxNonceB64' => boxNonceB64,
-                                        'boxB64' => boxB64,
-                                        'scryptSaltB64' => scryptSaltB64})
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
       get "/#{blake2sHash}"
 
@@ -111,12 +109,12 @@ describe SecretsController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys).to eq(%w(boxNonceB64 boxB64 scryptSaltB64))
+      expect(resp['data'].keys.sort).to eq(%w(boxNonceB64 boxB64 scryptSaltB64).sort)
       expect(resp['data']['boxNonceB64']).to eq(boxNonceB64)
       expect(resp['data']['boxB64']).to eq(boxB64)
       expect(resp['data']['scryptSaltB64']).to eq(scryptSaltB64)
 
-      expect($redis.get(key)).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
     end
   end
 
@@ -127,8 +125,7 @@ describe SecretsController do
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      key = "secrets:#{Digest::SHA256.hexdigest(blake2sHash)}"
-      expect($redis.get(key)).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
 
       post '/',
         id: blake2sHash,
@@ -136,11 +133,7 @@ describe SecretsController do
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
-      redis_value = $redis.get(key)
-      redis_value_parsed = JSON.parse(redis_value)
-      expect(redis_value_parsed).to eq({'boxNonceB64' => boxNonceB64,
-                                        'boxB64' => boxB64,
-                                        'scryptSaltB64' => scryptSaltB64})
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
       delete "/#{blake2sHash}"
 
@@ -152,7 +145,7 @@ describe SecretsController do
       expect(resp['status']).to eq('success')
       expect(resp['data']).to be_nil
 
-      expect($redis.get(key)).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
     end
   end
 end

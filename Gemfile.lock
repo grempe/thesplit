@@ -8,6 +8,13 @@ GIT
       redis (>= 2.1.0)
       time_ext (>= 0.2.9)
 
+GIT
+  remote: https://github.com/hashicorp/vault-ruby.git
+  revision: 35a14f775810ac26f6da0070f60ccf2faab6e84c
+  ref: 35a14f775810ac26f6da0070f60ccf2faab6e84c
+  specs:
+    vault (0.4.0.dev)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -174,6 +181,7 @@ DEPENDENCIES
   sinatra-param (~> 1.4)
   sysrandom (~> 1.0)
   tierion (~> 1.3)
+  vault!
   wwtd
 
 BUNDLED WITH

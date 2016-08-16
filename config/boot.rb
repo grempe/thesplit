@@ -44,6 +44,9 @@ Rollbar.configure do |config|
   config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
   config.disable_monkey_patch = true
   config.use_sidekiq 'queue' => 'default'
+  config.exception_level_filters.merge!({
+    'Sinatra::NotFound' => 'ignore'
+  })
 end
 
 # Security : scrub additional fields from Rollbar logs

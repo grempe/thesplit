@@ -43,15 +43,15 @@ describe SecretsController do
     end
 
     it 'stores a secret with valid data' do
-      blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      clientHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
 
       post '/',
-        id: blake2sHash,
+        id: clientHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
@@ -64,7 +64,7 @@ describe SecretsController do
       expect(resp['status']).to eq('success')
       expect(resp['data'].keys).to eq(%w(id createdAt expiresAt))
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
     end
   end
 
@@ -86,23 +86,23 @@ describe SecretsController do
     end
 
     it 'retrieves a secret' do
-      blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      clientHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
 
       post '/',
-        id: blake2sHash,
+        id: clientHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
       # has a one-time use token
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
-      get "/#{blake2sHash}"
+      get "/#{clientHash}"
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -115,10 +115,10 @@ describe SecretsController do
       expect(resp['data']['boxB64']).to eq(boxB64)
       expect(resp['data']['scryptSaltB64']).to eq(scryptSaltB64)
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
 
       # the second time should fail
-      get "/#{blake2sHash}"
+      get "/#{clientHash}"
 
       expect(last_response.status).to eq 404
     end
@@ -155,22 +155,22 @@ describe SecretsController do
 
   context 'DELETE /:id' do
     it 'deletes a secret' do
-      blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      clientHash = 'e8a3fcaf610745d6dae5df8db67bd264'
       boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
       boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
       scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
 
       post '/',
-        id: blake2sHash,
+        id: clientHash,
         boxNonceB64: boxNonceB64,
         boxB64: boxB64,
         scryptSaltB64: scryptSaltB64
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
-      delete "/#{blake2sHash}"
+      delete "/#{clientHash}"
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -180,7 +180,7 @@ describe SecretsController do
       expect(resp['status']).to eq('success')
       expect(resp['data']).to be_nil
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(blake2sHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
     end
   end
 end

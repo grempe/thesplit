@@ -165,6 +165,44 @@ class SecretsController < ApplicationController
     200
   end
 
+  get '/:id/receipt' do
+    Stats.store('views/api/v1/secrets/id/validate', count: 1)
+
+    # ID is the 16 byte hash of the data that was stored
+    param :id, String, required: true, min_length: 32, max_length: 32,
+                       format: settings.hex_regex
+
+    client_hash_id = params['id']
+    server_hash_id = Digest::SHA256.hexdigest(client_hash_id)
+
+    r = $redis.hget("blockchain:id:#{server_hash_id}", 'receipt')
+    raise Sinatra::NotFound if r.blank?
+    confirmed_at = $redis.hget("blockchain:id:#{server_hash_id}", 'confirmed')
+
+    begin
+      receipt_json = JSON.parse(r)
+    rescue StandardError
+      halt 500, error_json('server receipt could not be parsed', 500)
+    end
+
+    receipt = Tierion::HashApi::Receipt.new(receipt_json)
+
+    unless receipt && receipt.valid?
+      halt 500, error_json('server receipt is invalid', 500)
+    end
+
+    obj = {}
+    obj[:receipt] = receipt
+    obj[:confirmed_at] = confirmed_at.present? ? confirmed_at : nil
+
+    return success_json(obj)
+  end
+
+  options '/:id/receipt' do
+    response.headers['Allow'] = 'GET'
+    200
+  end
+
   def vault_token_24h_1x
     # num_uses is 4 since we auth, write, auth, read|delete in normal flow
     opts = { renewable: false,

@@ -124,6 +124,35 @@ describe SecretsController do
     end
   end
 
+  context 'GET /:id/receipt' do
+    before do
+      @receipt = { "@context"=>"https://w3id.org/chainpoint/v2",
+                  "type"=>"ChainpointSHA256v2",
+                  "targetHash"=>"90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b",
+                  "merkleRoot"=>"43425e5816b19992f98e7650f66485218eeb105b881da78432e703684c32a4c3",
+                  "proof"=>[{"right"=>"e54ff18231b44f121db4cf4beca99bb7eda69fea0b9211b72a46485e81018376"}],
+                  "anchors"=>[{"type"=>"BTCOpReturn", "sourceId"=>"ca3b1f8549029701f7b1d66bacd3784c814fc994d1fc012572ebeeef2c060fea"}]}
+
+      @client_hash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      @t = Time.now.utc.iso8601
+      $redis.hset("blockchain:id:#{Digest::SHA256.hexdigest(@client_hash)}", 'receipt', @receipt.to_json)
+      $redis.hset("blockchain:id:#{Digest::SHA256.hexdigest(@client_hash)}", 'confirmed', @t)
+    end
+
+    it 'retrieves a receipt' do
+      get "/#{@client_hash}/receipt"
+      expect(last_response.status).to eq 200
+      expect(last_response.headers['Content-Type']).to eq('application/json')
+
+      resp = JSON.parse(last_response.body)
+      expect(resp.keys).to eq(%w(status data))
+      expect(resp['status']).to eq('success')
+      expect(resp['data'].keys.sort).to eq(%w(confirmed_at receipt).sort)
+      expect(resp['data']['receipt']).to eq(@receipt)
+      expect(resp['data']['confirmed_at']).to eq(@t)
+    end
+  end
+
   context 'DELETE /:id' do
     it 'deletes a secret' do
       blake2sHash = 'e8a3fcaf610745d6dae5df8db67bd264'

@@ -99,7 +99,7 @@ class ApplicationController < Sinatra::Base
                    end
 
     # Core Redis client for general use in the app.
-    $redis = Redis::Namespace.new(:split, redis: redis_client)
+    $redis = redis_client
 
     # If using Redistat in multiple threads set this
     # somewhere in the beginning of the execution stack

@@ -206,8 +206,8 @@ class SecretsController < ApplicationController
   def vault_token_24h_1x
     # num_uses is 4 since we auth, write, auth, read|delete in normal flow
     opts = { renewable: false,
-             ttl: '24h',
-             explicit_max_ttl: '24h',
+             ttl: "#{settings.secrets_expire_in}s",
+             explicit_max_ttl: "#{settings.secrets_expire_in}s",
              num_uses: 4,
              policies: ['default'] }
 

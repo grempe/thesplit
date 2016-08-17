@@ -4,14 +4,18 @@ class BlockchainSendHashWorker
   # Send the SHA256 hash to Tierion for storage on the blockchain and
   # store it locally in a Redis hash under the key ID that is the same
   # ID that the secret is stored under.
-  def perform(server_hash_id, obj_hash)
+  def perform(server_hash_id)
     unless ENV['TIERION_ENABLED']
       logger.info('Exiting. TIERION_ENABLED is false or not set. No-Op')
       return nil
     end
 
-    # Send the hash to Tierion
-    hash_item = $blockchain.send(obj_hash)
+    # Send the hash to Tierion. This is a SHA256 of the server_hash_id
+    # so it can also be verified by a recipient without touching this
+    # server, with an extra measure of indirection by giving the blockchain
+    # something it can't reverse into knowledge of this system.
+    blockchain_hash_id = Digest::SHA256.hexdigest(server_hash_id)
+    hash_item = $blockchain.send(blockchain_hash_id)
 
     raise 'HashItem was blank' if hash_item.blank?
 
@@ -22,10 +26,10 @@ class BlockchainSendHashWorker
     # receiving receipts in the BlockchainGetReceiptsWorker job.  This key used
     # for this queue must match the key in BlockchainGetReceiptsWorker or the
     # ID's of Receipts that need to be retrieved won't be found.
-    $redis.sadd('blockchain:receipts_pending_queue', "#{obj_hash}:#{server_hash_id}:#{hash_item.id}")
+    $redis.sadd('blockchain:receipts_pending_queue', "#{server_hash_id}:#{hash_item.id}")
 
     # Store a copy of the HashItem in a Redis hash. Later we'll store the
-    # Receipt there also under a new hash key.
+    # Receipt there as well under another hash key.
     $redis.hset("blockchain:id:#{server_hash_id}", 'hash_item', hash_item.to_json)
   end
 end

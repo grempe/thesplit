@@ -12,29 +12,27 @@ class BlockchainGetReceiptConfirmationsWorker
     end
 
     $redis.smembers('blockchain:receipt_confirmations_pending_queue').each do |server_hash_id|
-      # find the receipt contents if it exists
+      # Find the receipt contents if it exists
       receipt_json = $redis.hget("blockchain:id:#{server_hash_id}", 'receipt')
 
-      # instantiate a new Receipt
       if receipt_json.present?
         receipt_hash = JSON.parse(receipt_json)
         receipt = Tierion::HashApi::Receipt.new(receipt_hash)
       end
 
-      # check for confirmations
-      if receipt.valid?
-        confirmations = receipt.confirmations
-      else
+      unless receipt.present? && receipt.valid?
         raise "Stored receipt for server_hash_id '#{server_hash_id}' is invalid"
       end
 
+      confirmations = receipt.confirmations
+
       next unless confirmations.present? && confirmations['BTCOpReturn']
 
-      # store the confirmation alongside the hash item receipt
-      # store the timestamp it was confirmed as the value
+      # Store the confirmation alongside the hash item receipt
+      # and with the confirmation timestamp as the value
       $redis.hset("blockchain:id:#{server_hash_id}", 'confirmed', Time.now.utc.iso8601)
 
-      # remove this ID from the confirmation queue
+      # Remove this ID from the confirmation queue
       $redis.srem('blockchain:receipt_confirmations_pending_queue', server_hash_id)
     end
   end

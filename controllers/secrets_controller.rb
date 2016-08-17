@@ -72,7 +72,7 @@ class SecretsController < ApplicationController
     one_time_token = vault_token_24h_1x
 
     # store the value of the one time token in a place we can find it
-    Vault.logical.write(vault_index_key, { token: one_time_token })
+    Vault.logical.write(vault_index_key, token: one_time_token)
 
     # Store secret data using the one-time-use token
     # Instantiate a new Vault::Client in order to auth with the one-time token
@@ -82,11 +82,9 @@ class SecretsController < ApplicationController
     # token num_uses - 1
     vc.logical.write("cubbyhole/#{server_hash_id}", obj)
 
-    # Generate a hash of the entire object stored in the DB for this secret
-    # and send it to the blockchain for storage. Send the server_hash_id as
-    # well to allow later lookup and random verification that what is stored
-    # in a record is still what is there and recorded on the blockchain.
-    BlockchainSendHashWorker.perform_async(server_hash_id, ObjectHash.hexdigest(obj))
+    # Send the hash to the blockchain. It will be passed through
+    # SHA256 one more time before anchoring on the BTC blockchain.
+    BlockchainSendHashWorker.perform_async(server_hash_id)
 
     return success_json(id: client_hash_id, createdAt: t.utc.iso8601,
                         expiresAt: t_exp.utc.iso8601)

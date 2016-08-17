@@ -173,25 +173,28 @@ class SecretsController < ApplicationController
     client_hash_id = params['id']
     server_hash_id = Digest::SHA256.hexdigest(client_hash_id)
 
-    r = $redis.hget("blockchain:id:#{server_hash_id}", 'receipt')
+    r = $redis.hgetall("blockchain:id:#{server_hash_id}")
+
     raise Sinatra::NotFound if r.blank?
-    confirmed_at = $redis.hget("blockchain:id:#{server_hash_id}", 'confirmed')
 
     begin
-      receipt_json = JSON.parse(r)
+      hash_item = JSON.parse(r['hash_item']) unless r['hash_item'].blank?
+      receipt = JSON.parse(r['receipt']) unless r['receipt'].blank?
+      confirmed = Time.parse(r['confirmed']) unless r['confirmed'].blank?
     rescue StandardError
-      halt 500, error_json('server receipt could not be parsed', 500)
+      halt 500, error_json('server blockchain receipt could not be parsed', 500)
     end
 
-    receipt = Tierion::HashApi::Receipt.new(receipt_json)
+    t_receipt = Tierion::HashApi::Receipt.new(receipt) unless receipt.blank?
 
-    unless receipt && receipt.valid?
+    if t_receipt && !t_receipt.valid?
       halt 500, error_json('server receipt is invalid', 500)
     end
 
     obj = {}
-    obj[:receipt] = receipt
-    obj[:confirmed_at] = confirmed_at.present? ? confirmed_at : nil
+    obj[:hash_item] = hash_item.present? ? hash_item : nil
+    obj[:receipt] = t_receipt.present? ? t_receipt : nil
+    obj[:confirmed] = confirmed.present? ? confirmed.utc.iso8601 : nil
 
     return success_json(obj)
   end

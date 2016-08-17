@@ -126,6 +126,11 @@ describe SecretsController do
 
   context 'GET /:id/receipt' do
     before do
+      @hash_item = { "receipt"=>nil,
+                     "id"=>"57b3ea8d3c6819e5786fa85a",
+                     "timestamp"=>1471408781,
+                     "hash"=>"90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b"}
+
       @receipt = { "@context"=>"https://w3id.org/chainpoint/v2",
                   "type"=>"ChainpointSHA256v2",
                   "targetHash"=>"90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b",
@@ -135,6 +140,7 @@ describe SecretsController do
 
       @client_hash = 'e8a3fcaf610745d6dae5df8db67bd264'
       @t = Time.now.utc.iso8601
+      $redis.hset("blockchain:id:#{Digest::SHA256.hexdigest(@client_hash)}", 'hash_item', @hash_item.to_json)
       $redis.hset("blockchain:id:#{Digest::SHA256.hexdigest(@client_hash)}", 'receipt', @receipt.to_json)
       $redis.hset("blockchain:id:#{Digest::SHA256.hexdigest(@client_hash)}", 'confirmed', @t)
     end
@@ -147,9 +153,10 @@ describe SecretsController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(confirmed_at receipt).sort)
+      expect(resp['data'].keys.sort).to eq(%w(confirmed hash_item receipt).sort)
+      expect(resp['data']['hash_item']).to eq(@hash_item)
       expect(resp['data']['receipt']).to eq(@receipt)
-      expect(resp['data']['confirmed_at']).to eq(@t)
+      expect(resp['data']['confirmed']).to eq(@t)
     end
   end
 

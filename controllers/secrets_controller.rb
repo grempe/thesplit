@@ -22,8 +22,7 @@ class SecretsController < ApplicationController
   post '/' do
     Stats.store('views/api/v1/secrets', count: 1, post: 1)
 
-    # ID is 16 byte hash of the data that was stored
-    param :id, String, required: true, min_length: 32, max_length: 32,
+    param :id, String, required: true, min_length: 20, max_length: 32,
                        format: settings.hex_regex
 
     param :boxNonceB64, String, required: true, min_length: 24, max_length: 64,
@@ -98,8 +97,7 @@ class SecretsController < ApplicationController
   delete '/:id' do
     Stats.store('views/api/v1/secrets/id', count: 1)
 
-    # ID is 16 byte hash of the data that was stored
-    param :id, String, required: true, min_length: 32, max_length: 32,
+    param :id, String, required: true, min_length: 20, max_length: 32,
                        format: settings.hex_regex
 
     client_hash_id = params['id']
@@ -127,8 +125,7 @@ class SecretsController < ApplicationController
   get '/:id' do
     Stats.store('views/api/v1/secrets/id', count: 1)
 
-    # ID is the 16 byte hash of the data that was stored
-    param :id, String, required: true, min_length: 32, max_length: 32,
+    param :id, String, required: true, min_length: 20, max_length: 32,
                        format: settings.hex_regex
 
     client_hash_id = params['id']
@@ -166,8 +163,7 @@ class SecretsController < ApplicationController
   get '/:id/receipt' do
     Stats.store('views/api/v1/secrets/id/validate', count: 1)
 
-    # ID is the 16 byte hash of the data that was stored
-    param :id, String, required: true, min_length: 32, max_length: 32,
+    param :id, String, required: true, min_length: 20, max_length: 32,
                        format: settings.hex_regex
 
     client_hash_id = params['id']

@@ -28,7 +28,7 @@ gem 'sidekiq-scheduler', '~> 2.0'
 gem 'jsender', '~> 0.2'
 gem 'tierion', '~> 1.3'
 gem 'rollbar', '~> 2.12'
-gem 'vault', git: 'https://github.com/hashicorp/vault-ruby.git', :ref => '35a14f775810ac26f6da0070f60ccf2faab6e84c'
+gem 'vault', '~> 0.5'
 
 group :test, :development do
   gem 'rake'

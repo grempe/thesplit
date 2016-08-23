@@ -8,22 +8,7 @@ We all have secrets. Send yours safely.
 
 [https://thesplit.is](https://thesplit.is)
 
-## Run Your Own
 
-Trust issues? Want to run your own copy of this application on Heroku?
-
-Use this [Heroku button](https://blog.heroku.com/heroku-button) to perform
-a free one-click install of a new private instance of this application
-on Heroku. This will configure a single Heroku Dyno and an instance of
-the Redis Cloud Redis DB addon. The source code will be pulled from the master
-branch of the [github.com/thesplit/thesplit](https://github.com/thesplit/thesplit)
-repository.
-
-You will also need your own instance (or high-availability cluster) of Hashicorp's
-Vault running. This encrypted vault is where all security sensitive application
-data is stored.
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/thesplit/thesplit)
 
 ## Development
 

@@ -62,7 +62,9 @@ class SecretsController < ApplicationController
 
     obj = { boxNonceB64: box_nonce_b64,
             boxB64: box_b64,
-            scryptSaltB64: scrypt_salt_b64 }
+            scryptSaltB64: scrypt_salt_b64,
+            createdAt: t.to_i,
+            expiresAt: t_exp.to_i }
 
     if Vault.logical.read(vault_index_key).present?
       halt 409, error_json('Data conflict, secret with ID already exists', 409)
@@ -85,8 +87,8 @@ class SecretsController < ApplicationController
     # SHA256 one more time before anchoring on the BTC blockchain.
     BlockchainSendHashWorker.perform_async(server_hash_id)
 
-    return success_json(id: client_hash_id, createdAt: t.utc.iso8601,
-                        expiresAt: t_exp.utc.iso8601)
+    return success_json(id: client_hash_id, createdAt: t.to_i,
+                        expiresAt: t_exp.to_i)
   end
 
   options '/' do

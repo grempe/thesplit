@@ -110,7 +110,7 @@ describe SecretsController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(boxNonceB64 boxB64 scryptSaltB64).sort)
+      expect(resp['data'].keys.sort).to eq(%w(boxNonceB64 boxB64 scryptSaltB64 createdAt expiresAt).sort)
       expect(resp['data']['boxNonceB64']).to eq(boxNonceB64)
       expect(resp['data']['boxB64']).to eq(boxB64)
       expect(resp['data']['scryptSaltB64']).to eq(scryptSaltB64)

@@ -43,18 +43,18 @@ describe SecretsController do
     end
 
     it 'stores a secret with valid data' do
-      clientHash = 'e8a3fcaf610745d6dae5df8db67bd264'
-      boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
-      boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
-      scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
+      client_hash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      box_nonce = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
+      box = 'rBIyEoNrKTop8Capp/51dtAlGJs='
+      scrypt_salt = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}")).to be_nil
 
       post '/',
-        id: clientHash,
-        boxNonceB64: boxNonceB64,
-        boxB64: boxB64,
-        scryptSaltB64: scryptSaltB64
+        id: client_hash,
+        box_nonce: box_nonce,
+        box: box,
+        scrypt_salt: scrypt_salt
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -62,9 +62,9 @@ describe SecretsController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys).to eq(%w(id createdAt expiresAt))
+      expect(resp['data'].keys).to eq(%w(id created_at expires_at))
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
     end
   end
 
@@ -86,23 +86,23 @@ describe SecretsController do
     end
 
     it 'retrieves a secret' do
-      clientHash = 'e8a3fcaf610745d6dae5df8db67bd264'
-      boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
-      boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
-      scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
+      client_hash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      box_nonce = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
+      box = 'rBIyEoNrKTop8Capp/51dtAlGJs='
+      scrypt_salt = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}")).to be_nil
 
       post '/',
-        id: clientHash,
-        boxNonceB64: boxNonceB64,
-        boxB64: boxB64,
-        scryptSaltB64: scryptSaltB64
+        id: client_hash,
+        box_nonce: box_nonce,
+        box: box,
+        scrypt_salt: scrypt_salt
 
       # has a one-time use token
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
-      get "/#{clientHash}"
+      get "/#{client_hash}"
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -110,15 +110,15 @@ describe SecretsController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(boxNonceB64 boxB64 scryptSaltB64 createdAt expiresAt).sort)
-      expect(resp['data']['boxNonceB64']).to eq(boxNonceB64)
-      expect(resp['data']['boxB64']).to eq(boxB64)
-      expect(resp['data']['scryptSaltB64']).to eq(scryptSaltB64)
+      expect(resp['data'].keys.sort).to eq(%w(box_nonce box scrypt_salt created_at expires_at).sort)
+      expect(resp['data']['box_nonce']).to eq(box_nonce)
+      expect(resp['data']['box']).to eq(box)
+      expect(resp['data']['scrypt_salt']).to eq(scrypt_salt)
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}")).to be_nil
 
       # the second time should fail
-      get "/#{clientHash}"
+      get "/#{client_hash}"
 
       expect(last_response.status).to eq 404
     end
@@ -162,22 +162,22 @@ describe SecretsController do
 
   context 'DELETE /:id' do
     it 'deletes a secret' do
-      clientHash = 'e8a3fcaf610745d6dae5df8db67bd264'
-      boxNonceB64 = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
-      boxB64 = 'rBIyEoNrKTop8Capp/51dtAlGJs='
-      scryptSaltB64 = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
+      client_hash = 'e8a3fcaf610745d6dae5df8db67bd264'
+      box_nonce = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
+      box = 'rBIyEoNrKTop8Capp/51dtAlGJs='
+      scrypt_salt = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}")).to be_nil
 
       post '/',
-        id: clientHash,
-        boxNonceB64: boxNonceB64,
-        boxB64: boxB64,
-        scryptSaltB64: scryptSaltB64
+        id: client_hash,
+        box_nonce: box_nonce,
+        box: box,
+        scrypt_salt: scrypt_salt
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
-      delete "/#{clientHash}"
+      delete "/#{client_hash}"
 
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -187,7 +187,7 @@ describe SecretsController do
       expect(resp['status']).to eq('success')
       expect(resp['data']).to be_nil
 
-      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(clientHash)}")).to be_nil
+      expect(Vault.logical.read("secret/#{Digest::SHA256.hexdigest(client_hash)}")).to be_nil
     end
   end
 end

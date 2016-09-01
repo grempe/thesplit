@@ -150,11 +150,12 @@ class ApplicationController < Sinatra::Base
       csp << "script-src 'self' 'unsafe-eval'"
       csp << "connect-src #{request.scheme}://#{request.host}:#{request.port}"
       csp << "img-src 'self'"
-      csp << "style-src 'self' 'unsafe-inline'"
+      csp << "style-src 'self' 'unsafe-inline' https: *.bootstrapcdn.com"
+      csp << "font-src 'self' 'unsafe-inline' https: *.bootstrapcdn.com"
       csp << "frame-ancestors 'none'"
       csp << "form-action 'self'"
-      csp << 'upgrade-insecure-requests'
-      csp << 'block-all-mixed-content'
+      csp << 'upgrade-insecure-requests' if settings.production?
+      csp << 'block-all-mixed-content' if settings.production?
       csp << 'referrer no-referrer'
       csp << 'report-uri /csp'
 

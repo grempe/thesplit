@@ -7,6 +7,18 @@
 # Heroku note. This will need to be manually started at least once:
 # heroku ps:scale worker=1
 
+# Load Dotenv as early in the boot process as possible
+# Top-most files override lower files
+# See : http://www.virtuouscode.com/2014/01/17/dotenv-for-multiple-environments/
+# See : https://juanitofatas.com/blog/2016/08/28/manage_your_project_s_environment_variables
+require 'dotenv'
+env = ENV.fetch('RACK_ENV') { 'development' }
+Dotenv.load(
+  File.expand_path('../../.env.local', __FILE__),
+  File.expand_path("../../.env.#{env}", __FILE__),
+  File.expand_path('../../.env', __FILE__)
+)
+
 require 'json'
 require 'redis'
 require 'redis-namespace'
@@ -17,19 +29,19 @@ require 'tierion'
 
 Dir.glob('./workers/*.rb').each { |file| require file }
 
-redis_uri = URI.parse(ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+redis_uri = URI.parse(ENV.fetch('REDIS_URL') { 'redis://127.0.0.1:6379' })
 $redis = Redis.new(uri: redis_uri)
 
 if $redis.blank?
   raise 'Exiting. The $redis client is nil.'
 end
 
-if ENV['TIERION_ENABLED'] && ENV['TIERION_USERNAME'].present? && ENV['TIERION_PASSWORD'].present?
+if tierion_enabled? && ENV.fetch('TIERION_USERNAME') && ENV.fetch('TIERION_PASSWORD')
   $blockchain = Tierion::HashApi::Client.new()
 end
 
-if ENV['TIERION_ENABLED'] && $blockchain.blank?
-  raise 'Exiting. TIERION_ENABLED is true, but $blockchain is nil. Bad auth?'
+if tierion_enabled? && $blockchain.blank?
+  raise 'Exiting. Tierion is enabled in this env, but $blockchain is nil. Bad auth?'
 end
 
 Sidekiq.configure_client do |config|
@@ -46,9 +58,9 @@ Sidekiq.configure_server do |config|
 end
 
 # Register a callback URL for Tierion (optional)
-if ENV['TIERION_ENABLED'] && ENV['RACK_ENV'] == 'production'
+if tierion_enabled? && ENV.fetch('RACK_ENV') == 'production'
   begin
-    callback_uri = ENV['TIERION_SUBSCRIPTION_CALLBACK_URI']
+    callback_uri = ENV.fetch('TIERION_SUBSCRIPTION_CALLBACK_URI')
     $blockchain.create_block_subscription(callback_uri) if callback_uri.present?
   rescue StandardError
     # no-op : duplicate registration can throw exception
@@ -56,6 +68,10 @@ if ENV['TIERION_ENABLED'] && ENV['RACK_ENV'] == 'production'
 end
 
 Rollbar.configure do |config|
-  config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+  config.access_token = ENV.fetch('ROLLBAR_ACCESS_TOKEN')
   config.use_sidekiq 'queue' => 'default'
+end
+
+def tierion_enabled?
+  ENV.fetch('TIERION_ENABLED') == 'true'
 end

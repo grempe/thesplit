@@ -6,8 +6,8 @@ class BlockchainGetReceiptConfirmationsWorker
   # is actually visible on a third party blockchain viewer
   # as a confirmed transaction.
   def perform
-    unless ENV['TIERION_ENABLED']
-      logger.info('Exiting. TIERION_ENABLED is false or not set. No-Op')
+    unless ENV.fetch('TIERION_ENABLED') == 'true'
+      logger.info('Exiting. TIERION_ENABLED is not true. No-Op')
       return nil
     end
 

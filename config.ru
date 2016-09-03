@@ -39,7 +39,7 @@ end
 
 use Rack::Attack
 
-redis_url = ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379'
+redis_url = ENV.fetch('REDIS_URL') { 'redis://127.0.0.1:6379' }
 Rack::Attack.cache.store = ActiveSupport::Cache::RedisStore.new(redis_url)
 
 Rack::Attack.throttle('sidekiq/req/ip', limit: 180, period: 1.minute) do |req|
@@ -139,8 +139,8 @@ use Rollbar::Middleware::Sinatra
 
 # Sidekiq Admin UI (Basic Auth)
 Sidekiq::Web.use Rack::Auth::Basic do |username, password|
-  username == ENV['SIDEKIQ_USERNAME'] && password == ENV['SIDEKIQ_PASSWORD']
-end if ENV['RACK_ENV'] == 'production'
+  username == ENV.fetch('SIDEKIQ_USERNAME') && password == ENV.fetch('SIDEKIQ_PASSWORD')
+end if ENV.fetch('RACK_ENV') == 'production'
 map('/sidekiq') { run Sidekiq::Web }
 
 map('/heartbeat') { run HeartbeatController }

@@ -1,8 +1,13 @@
 require 'rollbar/rake_tasks'
+require 'dotenv/tasks'
+
+# task :mytask => :dotenv do
+#     # things that require .env
+# end
 
 task :environment do
   Rollbar.configure do |config |
-    config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+    config.access_token = ENV.fetch('ROLLBAR_ACCESS_TOKEN')
   end
 end
 

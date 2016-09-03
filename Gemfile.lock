@@ -20,6 +20,7 @@ GEM
     concurrent-ruby (1.0.2)
     connection_pool (2.2.0)
     diff-lcs (1.2.5)
+    dotenv (2.1.1)
     ffi (1.9.14)
     formatador (0.2.5)
     git-version-bump (0.15.1)
@@ -151,6 +152,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport (~> 5.0)
   bundler (= 1.11.2)
+  dotenv (~> 2.1)
   guard-puma
   guard-rspec
   jsender (~> 0.2)

@@ -5,8 +5,8 @@ class BlockchainSendHashWorker
   # store it locally in a Redis hash under the key ID that is the same
   # ID that the secret is stored under.
   def perform(server_hash_id)
-    unless ENV['TIERION_ENABLED']
-      logger.info('Exiting. TIERION_ENABLED is false or not set. No-Op')
+    unless ENV.fetch('TIERION_ENABLED') == 'true'
+      logger.info('Exiting. TIERION_ENABLED is not true. No-Op')
       return nil
     end
 

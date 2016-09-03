@@ -3,8 +3,8 @@ class BlockchainGetReceiptsWorker
 
   # Retrieve and store all ready Blockchain Receipts
   def perform
-    unless ENV['TIERION_ENABLED']
-      logger.info('Exiting. TIERION_ENABLED is false or not set. No-Op')
+    unless ENV.fetch('TIERION_ENABLED') == 'true'
+      logger.info('Exiting. TIERION_ENABLED is not true. No-Op')
       return nil
     end
 

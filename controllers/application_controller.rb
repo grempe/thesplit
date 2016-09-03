@@ -50,12 +50,8 @@ class ApplicationController < Sinatra::Base
     set :root, "#{File.dirname(__FILE__)}/../"
 
     # Content Settings
-    set :site_name, ENV['SITE_NAME'] ||= 'thesplit.is'
-    set :site_domain, ENV['SITE_DOMAIN'] ||= 'thesplit.is'
-    set :site_tagline, ENV['SITE_TAGLINE'] ||= 'the end-to-end encrypted, zero-knowledge, auto-expiring, cryptographically secure, secret sharing service'
-    set :site_owner_name, ENV['SITE_OWNER_NAME'] ||= 'Glenn Rempe'
-    set :site_owner_email, ENV['SITE_OWNER_EMAIL'] ||= 'glenn@rempe.us'
-    set :site_owner_twitter, ENV['SITE_OWNER_TWITTER'] ||= 'grempe' # w/ no @ sign
+    set :site_name, ENV.fetch('SITE_NAME') { 'thesplit.is' }
+    set :site_tagline, ENV.fetch('SITE_TAGLINE') { 'the end-to-end encrypted, zero-knowledge, auto-expiring, cryptographically secure, secret sharing service' }
 
     # Caching
     # https://www.sitepoint.com/sinatras-little-helpers/
@@ -89,7 +85,7 @@ class ApplicationController < Sinatra::Base
 
     # REDIS
 
-    redis_uri = URI.parse(ENV['REDIS_URL'] ||= 'redis://127.0.0.1:6379')
+    redis_uri = URI.parse(ENV.fetch('REDIS_URL') { 'redis://127.0.0.1:6379' })
     rparam = { host: redis_uri.host, port: redis_uri.port, password: redis_uri.password }
 
     redis_client = if settings.test?

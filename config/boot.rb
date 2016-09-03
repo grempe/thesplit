@@ -41,7 +41,7 @@ Dir.glob('./{helpers,controllers,models,workers}/*.rb').each do |file|
 end
 
 Rollbar.configure do |config|
-  config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+  config.access_token = ENV.fetch('ROLLBAR_ACCESS_TOKEN')
   config.disable_monkey_patch = true
   config.use_sidekiq 'queue' => 'default'
   config.exception_level_filters.merge!({

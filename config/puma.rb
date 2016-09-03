@@ -18,9 +18,21 @@
 #
 ###############################################################################
 
-if ENV['RACK_ENV'] == 'production'
-  workers Integer(ENV['PUMA_WORKERS'] || 2)
-  threads_count = Integer(ENV['PUMA_THREADS'] || 4)
+# Load Dotenv as early in the boot process as possible
+# Top-most files override lower files
+# See : http://www.virtuouscode.com/2014/01/17/dotenv-for-multiple-environments/
+# See : https://juanitofatas.com/blog/2016/08/28/manage_your_project_s_environment_variables
+require 'dotenv'
+env = ENV.fetch('RACK_ENV') { 'development' }
+Dotenv.load(
+  File.expand_path('../../.env.local', __FILE__),
+  File.expand_path("../../.env.#{env}", __FILE__),
+  File.expand_path('../../.env', __FILE__)
+)
+
+if ENV.fetch('RACK_ENV') == 'production'
+  workers Integer(ENV.fetch('PUMA_WORKERS') { 2 })
+  threads_count = Integer(ENV.fetch('PUMA_THREADS') { 4 })
 else
   workers 1
   threads_count = 1
@@ -31,8 +43,8 @@ threads threads_count, threads_count
 preload_app!
 
 rackup      DefaultRackup
-port        ENV['PORT']     || 3000
-environment ENV['RACK_ENV'] || 'development'
+port        ENV.fetch('PORT') { 3000 }
+environment ENV.fetch('RACK_ENV') { 'development' }
 
 on_worker_boot do
   # Do Something Here

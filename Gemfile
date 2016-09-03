@@ -17,7 +17,7 @@ gem 'rack-robustness', '~> 1.1', require: 'rack/robustness'
 gem 'sinatra', '~> 1.4', require: 'sinatra/base'
 gem 'sinatra-param', '~> 1.4', require: 'sinatra/param'
 gem 'sinatra-cross_origin', '~> 0.3', require: 'sinatra/cross_origin'
-
+gem 'dotenv', '~> 2.1'
 gem 'activesupport', '~> 5.0'
 gem 'redis', '~> 3.3'
 gem 'redis-namespace', '~> 1.5'

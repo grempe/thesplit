@@ -36,11 +36,11 @@ if $redis.blank?
   raise 'Exiting. The $redis client is nil.'
 end
 
-if tierion_enabled? && ENV.fetch('TIERION_USERNAME') && ENV.fetch('TIERION_PASSWORD')
+if ENV.fetch('TIERION_ENABLED') == 'true' && ENV.fetch('TIERION_USERNAME') && ENV.fetch('TIERION_PASSWORD')
   $blockchain = Tierion::HashApi::Client.new()
 end
 
-if tierion_enabled? && $blockchain.blank?
+if ENV.fetch('TIERION_ENABLED') == 'true' && $blockchain.blank?
   raise 'Exiting. Tierion is enabled in this env, but $blockchain is nil. Bad auth?'
 end
 
@@ -58,7 +58,7 @@ Sidekiq.configure_server do |config|
 end
 
 # Register a callback URL for Tierion (optional)
-if tierion_enabled? && ENV.fetch('RACK_ENV') == 'production'
+if ENV.fetch('TIERION_ENABLED') == 'true' && ENV.fetch('RACK_ENV') == 'production'
   begin
     callback_uri = ENV.fetch('TIERION_SUBSCRIPTION_CALLBACK_URI')
     $blockchain.create_block_subscription(callback_uri) if callback_uri.present?
@@ -70,8 +70,4 @@ end
 Rollbar.configure do |config|
   config.access_token = ENV.fetch('ROLLBAR_ACCESS_TOKEN')
   config.use_sidekiq 'queue' => 'default'
-end
-
-def tierion_enabled?
-  ENV.fetch('TIERION_ENABLED') == 'true'
 end

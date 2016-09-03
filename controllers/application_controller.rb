@@ -144,7 +144,7 @@ class ApplicationController < Sinatra::Base
       csp = []
       csp << "default-src 'none'"
       csp << "script-src 'self' 'unsafe-eval'"
-      csp << "connect-src #{request.scheme}://#{request.host}:#{request.port}"
+      csp << "connect-src 'self' http://0.0.0.0:3000 http://127.0.0.1:3000 https://thesplit.is"
       csp << "img-src 'self'"
       csp << "style-src 'self' 'unsafe-inline' https: *.bootstrapcdn.com"
       csp << "font-src 'self' 'unsafe-inline' https: *.bootstrapcdn.com"

@@ -1,11 +1,3 @@
 {
-  "public/css/spectre-0.1.23/gulpfile.js": "sha384-Xp3IjWy0ob4ZItvxHl3tgKUT20QkBqFbyjmu6Qs5+f06kzXf7t1Eo/VD9JgTGQHS",
-  "public/css/spectre-0.1.23/tools/resizer/assets/js/jquery-2.2.3.min.js": "sha384-I6F5OKECLVtK/BL+8iSLDEHowSAfUo76ZL9+kGAgTRdiByINKJaqTPH/QVNS1VDb",
-  "public/css/spectre-0.1.23/tools/resizer/assets/js/zepto.min.js": "sha384-Pr8/mrKRkgWZLpm5do6XPpWmSeEAExoJ7pLNL2oOYEBbn5DB8V1cLhkc0XISzoad",
-  "public/js/build.js": "sha384-X6TzwaSq06o1l/LOjFlyPHLYqsbf2GA4Ksme7jjgt0YyjTeaqnoFv/Sd/ctAe19h",
-  "public/css/spectre-0.1.23/demo/font/demo-files/demo.css": "sha384-wQVP4eTA8m+gBh31tKZ9eCJxNPFtwXF9Xpb52Xz8LPOYiyvWn/kkiRVgRHBlqp8g",
-  "public/css/spectre-0.1.23/demo/font/style.css": "sha384-QImdv7SyjwPzxqjbZ618CXK319Ey47+dKkNNN9ZhbMQM4DowCRybo3CXLAd5oemk",
-  "public/css/spectre-0.1.23/dist/spectre.css": "sha384-V+N4D/htaLuRILAvHe4O6A01CHh2RxmrwtceQH05MaXVaOAoMMsiZkOxNO1SPW6I",
-  "public/css/spectre-0.1.23/dist/spectre.min.css": "sha384-rQIIoFzVaD19jQF8ldEJFgtZ1mGBVERWEsIK5GkwJSda8YsI7gIhcmTJ5vzrRcfV",
-  "public/css/spectre-0.1.23/tools/resizer/assets/css/app.css": "sha384-WBNIv52///KGqnVXjeyabDPmqQ2WF95V7MJVBhfpsF6vrnUEPgetACA7k4gJH5dO"
+  "public/js/build.js": "sha384-X6TzwaSq06o1l/LOjFlyPHLYqsbf2GA4Ksme7jjgt0YyjTeaqnoFv/Sd/ctAe19h"
 }

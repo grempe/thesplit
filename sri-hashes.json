@@ -1,3 +1,5 @@
 {
-  "public/js/build.js": "sha384-HCmyALWuGUGnawRx6rON5QaNRyjQq9TTCKWGl1GMDfFH8OPKQjxOFoEhp9X7r7yN"
+  "public/js/build.js": "sha384-Uep1ZzgL7YFrafZl6XDvQlieTC6DhdTOsV3MfZb8E7Q7m2IDO1NjwmGXzK0hTTAP",
+  "public/css/font-awesome-4.6.3/css/font-awesome.css": "sha384-4VRZGwWMhjXovPWoUGTYE88gJBIOhwY3Oqu65ZXYasKYe9ZoAXNzVWHZ6lhvspmL",
+  "public/css/font-awesome-4.6.3/css/font-awesome.min.css": "sha384-2+wSFRlKbyesCZSwKS4npTCV5GMw+Jlj4WT6PCxgWORcjzQYAXCt207M9EwxdoeR"
 }

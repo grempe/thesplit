@@ -38,14 +38,14 @@ class SecretsController < ApplicationController
 
     vault_index_key = "secret/#{params['id']}"
 
-    t     = Time.now
+    t     = Time.now.utc
     t_exp = t + settings.secrets_expire_in
 
     obj = { box_nonce: params['box_nonce'],
             box: params['box'],
             scrypt_salt: params['scrypt_salt'],
-            created_at: t.to_i,
-            expires_at: t_exp.to_i }
+            created_at: t.iso8601,
+            expires_at: t_exp.iso8601 }
 
     if Vault.logical.read(vault_index_key).present?
       halt 409, error_json('Data conflict, secret with ID already exists', 409)
@@ -66,7 +66,7 @@ class SecretsController < ApplicationController
 
     BlockchainSendHashWorker.perform_async(params['id'])
 
-    return success_json(created_at: t.to_i, expires_at: t_exp.to_i)
+    return success_json(created_at: t.iso8601, expires_at: t_exp.iso8601)
   end
 
   options '/' do

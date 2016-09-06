@@ -11,7 +11,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.0.0)
+    activesupport (5.0.0.1)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (~> 0.7)
       minitest (~> 5.1)
@@ -81,7 +81,7 @@ GEM
     rack-robustness (1.1.0)
     rack-test (0.6.3)
       rack (>= 1.0)
-    rake (10.4.2)
+    rake (11.2.2)
     rb-fsevent (0.9.7)
     rb-inotify (0.9.7)
       ffi (>= 0.5.0)
@@ -103,7 +103,7 @@ GEM
       rspec-core (~> 3.5.0)
       rspec-expectations (~> 3.5.0)
       rspec-mocks (~> 3.5.0)
-    rspec-core (3.5.2)
+    rspec-core (3.5.3)
       rspec-support (~> 3.5.0)
     rspec-expectations (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
@@ -150,7 +150,7 @@ GEM
       i18n (>= 0.4.2)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    vault (0.5.0)
+    vault (0.6.0)
     wwtd (1.3.0)
 
 PLATFORMS
@@ -189,7 +189,7 @@ DEPENDENCIES
   sinatra-param (~> 1.4)
   sysrandom (~> 1.0)
   tierion (~> 1.3)
-  vault (~> 0.5)
+  vault (~> 0.6)
   wwtd
 
 BUNDLED WITH

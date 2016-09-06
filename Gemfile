@@ -39,4 +39,5 @@ group :test, :development do
   gem 'guard-rspec', require: false
   gem 'wwtd'
   gem 'mock_redis', '~> 0.17'
+  gem 'fasterer'
 end

@@ -138,9 +138,12 @@ use Rollbar::Middleware::Sinatra
 #################################################
 
 # Sidekiq Admin UI (Basic Auth)
+# Access via (note trailing slash):
+#   http://0.0.0.0:3000/sidekiq/
 Sidekiq::Web.use Rack::Auth::Basic do |username, password|
   username == ENV.fetch('SIDEKIQ_USERNAME') && password == ENV.fetch('SIDEKIQ_PASSWORD')
 end if ENV.fetch('RACK_ENV') == 'production'
+
 map('/sidekiq') { run Sidekiq::Web }
 
 map('/heartbeat') { run HeartbeatController }

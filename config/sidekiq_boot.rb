@@ -7,6 +7,9 @@
 # Heroku note. This will need to be manually started at least once:
 # heroku ps:scale worker=1
 
+# Admin UI: Access via (note trailing slash):
+#   http://0.0.0.0:3000/sidekiq/
+
 # Load Dotenv as early in the boot process as possible
 # Top-most files override lower files
 # See : http://www.virtuouscode.com/2014/01/17/dotenv-for-multiple-environments/

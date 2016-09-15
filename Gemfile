@@ -29,6 +29,7 @@ gem 'jsender', '~> 0.2'
 gem 'tierion', '~> 1.3'
 gem 'rollbar', '~> 2.12'
 gem 'vault', '~> 0.6'
+gem 'session_keys', '1.0.0'
 
 group :test, :development do
   gem 'rake'

@@ -2,10 +2,10 @@ source 'https://rubygems.org'
 ruby '2.2.5'
 
 # current heroku supported version
-gem 'bundler', '1.11.2'
+gem 'bundler'
 
 # replace SecureRandom
-gem 'sysrandom', '~> 1.0', require: 'sysrandom/securerandom'
+gem 'sysrandom', '>= 1.0.3', '~> 1.0.3', require: 'sysrandom/securerandom'
 gem 'rbnacl-libsodium', '~> 1.0'
 gem 'rbnacl', '~> 3.4'
 gem 'json', '~> 2.0'
@@ -30,12 +30,16 @@ gem 'tierion', '~> 1.3'
 gem 'rollbar', '~> 2.12'
 gem 'vault', '~> 0.6'
 gem 'session_keys', '1.0.0'
+gem 'rethinkdb', '~> 2.3'
+gem 'sirp', '~> 2.0.0'
+gem 'tss', '~> 0.4.0'
 
 group :test, :development do
   gem 'rake'
   gem 'rspec'
   gem 'rack-test'
   gem 'pry'
+  gem 'pry-byebug'
   gem 'guard-puma'
   gem 'guard-rspec', require: false
   gem 'wwtd'

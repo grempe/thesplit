@@ -32,7 +32,7 @@ gem 'vault', '~> 0.6'
 gem 'session_keys', '1.0.0'
 gem 'rethinkdb', '~> 2.3'
 gem 'sirp', '~> 2.0.0'
-gem 'tss', '~> 0.4.0'
+gem 'tss', '~> 0.4.1'
 
 group :test, :development do
   gem 'rake'

@@ -149,5 +149,6 @@ map('/sidekiq') { run Sidekiq::Web }
 map('/heartbeat') { run HeartbeatController }
 map('/csp') { run ContentSecurityPolicyController }
 map('/blockchain_callback') { run BlockchainCallbackController }
+map('/api/v1/users') { run UsersController }
 map('/api/v1/secrets') { run SecretsController }
 map('/') { run ApplicationController }

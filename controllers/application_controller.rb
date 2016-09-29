@@ -111,6 +111,38 @@ class ApplicationController < Sinatra::Base
       config.redis = { namespace: 'sidekiq' }
     end
 
+    # RETHINKDB
+    rdb_config = {
+      host: ENV.fetch('RDB_HOST') { 'localhost' },
+      port: ENV.fetch('RDB_PORT') { 28015 },
+      db: ENV.fetch('RDB_DB') { 'thesplit' }
+    }
+    set :rdb_config, rdb_config
+
+    r = RethinkDB::RQL.new
+    set :r, r
+
+    begin
+      connection = r.connect(host: rdb_config[:host], port: rdb_config[:port])
+    rescue StandardError => err
+      puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
+      Process.exit(1)
+    end
+
+    begin
+      r.db_create(rdb_config[:db]).run(connection)
+    rescue RethinkDB::ReqlOpFailedError => e
+      puts "RDB db_create failed : #{e.class} : #{e.message}"
+    end
+
+    begin
+      r.db(rdb_config[:db]).table_create('users').run(connection)
+    rescue RethinkDB::ReqlOpFailedError => e
+      puts "RDB table_create failed : #{e.class} : #{e.message}"
+    ensure
+      connection.close
+    end
+
     # Content Security Policy (CSP)
     set :csp_enabled, true
     # CSP : If true, only report, don't actually enforce in the browser

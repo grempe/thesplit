@@ -21,8 +21,6 @@
 # App endpoints for /api/v1/secrets/*
 class SecretsController < ApplicationController
   post '/' do
-    Stats.store('views/api/v1/secrets', count: 1, post: 1)
-
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
 
@@ -75,8 +73,6 @@ class SecretsController < ApplicationController
   end
 
   delete '/:id' do
-    Stats.store('views/api/v1/secrets/id', count: 1)
-
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
 
@@ -101,8 +97,6 @@ class SecretsController < ApplicationController
   end
 
   get '/:id' do
-    Stats.store('views/api/v1/secrets/id', count: 1)
-
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
 
@@ -135,8 +129,6 @@ class SecretsController < ApplicationController
   end
 
   get '/:id/receipt' do
-    Stats.store('views/api/v1/secrets/id/validate', count: 1)
-
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
 

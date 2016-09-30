@@ -20,7 +20,6 @@
 
 class HeartbeatController < ApplicationController
   get '/' do
-    Stats.store('views/heartbeat', count: 1)
     return success_json(timestamp: Time.now.utc.iso8601)
   end
 

@@ -24,9 +24,6 @@ class ContentSecurityPolicyController < ApplicationController
     if params && params['csp-report'].present?
       if params['csp-report']['violated-directive'].present?
         directive = params['csp-report']['violated-directive'].strip.to_s
-        Stats.store('csp', :count => 1, directive => 1)
-      else
-        Stats.store('csp', count: 1, unknown: 1)
       end
       logger.warn params['csp-report']
     end

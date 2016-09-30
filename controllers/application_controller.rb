@@ -97,11 +97,6 @@ class ApplicationController < Sinatra::Base
     # Core Redis client for general use in the app.
     $redis = redis_client
 
-    # If using Redistat in multiple threads set this
-    # somewhere in the beginning of the execution stack
-    Redistat.thread_safe = true
-    Redistat.connection = Redis::Namespace.new(:redistat, redis: redis_client)
-
     # namespace Sidekiq
     Sidekiq.configure_client do |config|
       config.redis = { namespace: 'sidekiq' }
@@ -205,7 +200,6 @@ class ApplicationController < Sinatra::Base
   end
 
   get '/' do
-    Stats.store('views/root', count: 1)
     content_type :html
     erb :index
   end
@@ -217,20 +211,16 @@ class ApplicationController < Sinatra::Base
 
   # Sinatra::NotFound handler
   not_found do
-    Stats.store('views/error/404', count: 1)
     halt 404, error_json('Not Found', 404)
   end
 
   # Custom error handler for sinatra-param
   # https://github.com/mattt/sinatra-param
   error Sinatra::Param::InvalidParameterError do
-    # Also store the name of the invalid param in the stats db
-    Stats.store('views/error/400', 'count' => 1, env['sinatra.error'].param => 1)
     halt 400, error_json("#{env['sinatra.error'].param} is invalid", 400)
   end
 
   error do
-    Stats.store('views/error/500', count: 1)
     halt 500, error_json('Server Error', 500)
   end
 end

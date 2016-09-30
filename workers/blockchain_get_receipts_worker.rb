@@ -22,7 +22,11 @@ class BlockchainGetReceiptsWorker
       raise "Receipt for ID #{hash_item_id} invalid Merkle tree" unless r.valid?
 
       # Store the receipt under the server hash ID
-      $redis.hset("blockchain:id:#{server_hash_id}", 'receipt', r.to_json)
+      $r.connect($rdb_config) do |conn|
+        $r.table('blockchain').get(server_hash_id).update(
+          receipt: r
+        ).run(conn)
+      end
 
       # Remove this processed item from the queue
       $redis.srem('blockchain:receipts_pending_queue', rid)

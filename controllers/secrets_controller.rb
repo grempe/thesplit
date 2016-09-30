@@ -132,13 +132,15 @@ class SecretsController < ApplicationController
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
 
-    r = $redis.hgetall("blockchain:id:#{params['id']}")
+    r = settings.r.connect(settings.rdb_config) do |conn|
+      settings.r.table('blockchain').get(params['id']).run(conn)
+    end
 
     raise Sinatra::NotFound if r.blank?
 
     begin
-      hash_item = JSON.parse(r['hash_item']) unless r['hash_item'].blank?
-      receipt = JSON.parse(r['receipt']) unless r['receipt'].blank?
+      hash_item = r['hash_item'] unless r['hash_item'].blank?
+      receipt = r['receipt'] unless r['receipt'].blank?
       confirmed = Time.parse(r['confirmed']) unless r['confirmed'].blank?
     rescue StandardError
       halt 500, error_json('server blockchain receipt could not be parsed', 500)

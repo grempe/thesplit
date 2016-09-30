@@ -126,26 +126,43 @@ describe SecretsController do
 
   context 'GET /:id/receipt' do
     before do
-      @hash_item = { "receipt"=>nil,
-                     "id"=>"57b3ea8d3c6819e5786fa85a",
-                     "timestamp"=>1471408781,
-                     "hash"=>"90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b"}
+      @hash_item = {
+        'receipt' => nil,
+        'id' => '57b3ea8d3c6819e5786fa85a',
+        'timestamp' => 1471408781,
+        'hash' => '90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b'
+      }
 
-      @receipt = { "@context"=>"https://w3id.org/chainpoint/v2",
-                  "type"=>"ChainpointSHA256v2",
-                  "targetHash"=>"90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b",
-                  "merkleRoot"=>"43425e5816b19992f98e7650f66485218eeb105b881da78432e703684c32a4c3",
-                  "proof"=>[{"right"=>"e54ff18231b44f121db4cf4beca99bb7eda69fea0b9211b72a46485e81018376"}],
-                  "anchors"=>[{"type"=>"BTCOpReturn", "sourceId"=>"ca3b1f8549029701f7b1d66bacd3784c814fc994d1fc012572ebeeef2c060fea"}]}
+      @receipt = {
+        '@context' => 'https://w3id.org/chainpoint/v2',
+        'type' => 'ChainpointSHA256v2',
+        'targetHash' => '90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b',
+        'merkleRoot' => '43425e5816b19992f98e7650f66485218eeb105b881da78432e703684c32a4c3',
+        'proof' => [
+          { 'right' => 'e54ff18231b44f121db4cf4beca99bb7eda69fea0b9211b72a46485e81018376' }
+        ],
+        'anchors' => [
+          {
+            'type' => 'BTCOpReturn',
+            'sourceId' => 'ca3b1f8549029701f7b1d66bacd3784c814fc994d1fc012572ebeeef2c060fea'
+          }
+        ]
+      }
 
       @client_hash = 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98'
-      @t = Time.now.utc.iso8601
-      $redis.hset("blockchain:id:#{@client_hash}", 'hash_item', @hash_item.to_json)
-      $redis.hset("blockchain:id:#{@client_hash}", 'receipt', @receipt.to_json)
-      $redis.hset("blockchain:id:#{@client_hash}", 'confirmed', @t)
+      @t = '2016-09-30T18:03:16Z'
     end
 
     it 'retrieves a receipt' do
+      app.settings.r.connect(app.settings.rdb_config) do |conn|
+        app.settings.r.table('blockchain').insert(
+          id: @client_hash,
+          hash_item: @hash_item,
+          receipt: @receipt,
+          confirmed: @t
+        ).run(conn)
+      end
+
       get "/#{@client_hash}/receipt"
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -170,10 +187,10 @@ describe SecretsController do
       expect(Vault.logical.read("secret/#{client_hash}")).to be_nil
 
       post '/',
-        id: client_hash,
-        box_nonce: box_nonce,
-        box: box,
-        scrypt_salt: scrypt_salt
+           id: client_hash,
+           box_nonce: box_nonce,
+           box: box,
+           scrypt_salt: scrypt_salt
 
       expect(Vault.logical.read("secret/#{client_hash}").data[:token]).to match(/^[a-f0-9\-]+$/)
 

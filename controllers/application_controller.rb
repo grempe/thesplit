@@ -106,11 +106,11 @@ class ApplicationController < Sinatra::Base
       config.redis = { namespace: 'sidekiq' }
     end
 
-    # RETHINKDB
+    # RethinkDB
     rdb_config = {
       host: ENV.fetch('RDB_HOST') { 'localhost' },
       port: ENV.fetch('RDB_PORT') { 28015 },
-      db: ENV.fetch('RDB_DB') { 'thesplit' }
+      db: ENV.fetch('RDB_DB') { settings.test? ? 'thesplit_test' : 'thesplit' }
     }
     set :rdb_config, rdb_config
 
@@ -118,24 +118,16 @@ class ApplicationController < Sinatra::Base
     set :r, r
 
     begin
-      connection = r.connect(host: rdb_config[:host], port: rdb_config[:port])
-    rescue StandardError => err
-      puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
+      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
+        r.db_create(rdb_config[:db]).run(conn)
+        r.db(rdb_config[:db]).table_create('users').run(conn)
+        r.db(rdb_config[:db]).table_create('blockchain').run(conn)
+      end
+    rescue RethinkDB::ReqlOpFailedError => e
+      puts "#{e.class} : #{e.message}"
+    rescue StandardError => e
+      puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{e.message})"
       Process.exit(1)
-    end
-
-    begin
-      r.db_create(rdb_config[:db]).run(connection)
-    rescue RethinkDB::ReqlOpFailedError => e
-      puts "RDB db_create failed : #{e.class} : #{e.message}"
-    end
-
-    begin
-      r.db(rdb_config[:db]).table_create('users').run(connection)
-    rescue RethinkDB::ReqlOpFailedError => e
-      puts "RDB table_create failed : #{e.class} : #{e.message}"
-    ensure
-      connection.close
     end
 
     # Content Security Policy (CSP)

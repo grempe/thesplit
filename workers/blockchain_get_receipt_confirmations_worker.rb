@@ -29,8 +29,12 @@ class BlockchainGetReceiptConfirmationsWorker
       next unless confirmations.present? && confirmations['BTCOpReturn']
 
       # Store the confirmation alongside the hash item receipt
-      # and with the confirmation timestamp as the value
-      $redis.hset("blockchain:id:#{server_hash_id}", 'confirmed', Time.now.utc.iso8601)
+      # with the confirmation timestamp as the value
+      $r.connect($rdb_config) do |conn|
+        $r.table('blockchain').get(server_hash_id).update(
+          confirmed: Time.now.utc.iso8601
+        ).run(conn)
+      end
 
       # Remove this ID from the confirmation queue
       $redis.srem('blockchain:receipt_confirmations_pending_queue', server_hash_id)

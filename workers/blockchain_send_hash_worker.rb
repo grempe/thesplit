@@ -28,8 +28,17 @@ class BlockchainSendHashWorker
     # ID's of Receipts that need to be retrieved won't be found.
     $redis.sadd('blockchain:receipts_pending_queue', "#{server_hash_id}:#{hash_item.id}")
 
-    # Store a copy of the HashItem in a Redis hash. Later we'll store the
-    # Receipt there as well under another hash key.
-    $redis.hset("blockchain:id:#{server_hash_id}", 'hash_item', hash_item.to_json)
+    # Store a copy of the HashItem. Later we'll store the
+    # Receipt there as well.
+    $r.connect($rdb_config) do |conn|
+      $r.table('blockchain').insert(
+        id: server_hash_id,
+        hash_item: {
+          id: hash_item.id,
+          timestamp: hash_item.timestamp,
+          hash: hash_item.hash
+        }
+      ).run(conn)
+    end
   end
 end

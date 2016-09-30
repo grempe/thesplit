@@ -28,11 +28,28 @@ require 'rack/test'
 require 'sidekiq/testing'
 Sidekiq::Logging.logger = nil
 
+def rethinkdb_flush_tables
+  app.settings.r.connect(app.settings.rdb_config) do |conn|
+    %w(users blockchain).each do |tbl|
+      app.settings.r.db(app.settings.rdb_config[:db]).table(tbl).delete.run(conn)
+    end
+  end
+end
+
+def vault_flush_secrets
+  base = 'secret/'
+  Vault.logical.list(base).each do |sec|
+    Vault.logical.delete("#{base}#{sec}")
+  end
+end
+
 RSpec.configure do |config|
   config.include Rack::Test::Methods
 
   config.before(:each) {
     $redis.flushdb
+    rethinkdb_flush_tables
+    vault_flush_secrets
   }
 
   # rspec-expectations config goes here. You can use an alternate
@@ -64,6 +81,8 @@ RSpec.configure do |config|
   # inherited by the metadata hash of host groups and examples, rather than
   # triggering implicit auto-inclusion in groups with matching metadata.
   config.shared_context_metadata_behavior = :apply_to_host_groups
+
+  config.order = :random
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.

@@ -120,14 +120,25 @@ class ApplicationController < Sinatra::Base
     begin
       r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
         r.db_create(rdb_config[:db]).run(conn)
+      end
+    rescue RethinkDB::ReqlOpFailedError => e
+      puts "#{e.class} : #{e.message}"
+    end
+
+    begin
+      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
         r.db(rdb_config[:db]).table_create('users').run(conn)
+      end
+    rescue RethinkDB::ReqlOpFailedError => e
+      puts "#{e.class} : #{e.message}"
+    end
+
+    begin
+      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
         r.db(rdb_config[:db]).table_create('blockchain').run(conn)
       end
     rescue RethinkDB::ReqlOpFailedError => e
       puts "#{e.class} : #{e.message}"
-    rescue StandardError => e
-      puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{e.message})"
-      Process.exit(1)
     end
 
     # Content Security Policy (CSP)

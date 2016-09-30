@@ -13,7 +13,10 @@ class BlockchainGetReceiptConfirmationsWorker
 
     $redis.smembers('blockchain:receipt_confirmations_pending_queue').each do |server_hash_id|
       # Find the receipt contents if it exists
-      receipt_json = $redis.hget("blockchain:id:#{server_hash_id}", 'receipt')
+      receipt_json = $r.connect($rdb_config) do |conn|
+        resp = $r.table('blockchain').get(server_hash_id).run(conn)
+        resp['receipt']
+      end
 
       if receipt_json.present?
         receipt_hash = JSON.parse(receipt_json)

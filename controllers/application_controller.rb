@@ -190,10 +190,16 @@ class ApplicationController < Sinatra::Base
       csp = []
       csp << "default-src 'none'"
       csp << "script-src 'self' 'unsafe-eval'"
-      csp << "connect-src 'self' http://0.0.0.0:3000 http://127.0.0.1:3000 https://thesplit.is"
+
+      if settings.production?
+        csp << "connect-src 'self' https://thesplit.is"
+      else
+        csp << "connect-src 'self' http://0.0.0.0:3000 http://127.0.0.1:3000"
+      end
+
       csp << "img-src 'self'"
-      csp << "style-src 'self' 'unsafe-inline' https: *.bootstrapcdn.com"
-      csp << "font-src 'self' 'unsafe-inline' https: *.bootstrapcdn.com"
+      csp << "style-src 'self' 'unsafe-inline' https: maxcdn.bootstrapcdn.com"
+      csp << "font-src 'self' https: *.bootstrapcdn.com"
       csp << "frame-ancestors 'none'"
       csp << "form-action 'self'"
       csp << 'upgrade-insecure-requests' if settings.production?

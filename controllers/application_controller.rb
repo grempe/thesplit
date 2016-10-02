@@ -157,6 +157,14 @@ class ApplicationController < Sinatra::Base
       puts "#{e.class} : #{e.message}"
     end
 
+    begin
+      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
+        r.db(rdb_config[:db]).table_create('heartbeat').run(conn)
+      end
+    rescue RethinkDB::ReqlOpFailedError => e
+      puts "#{e.class} : #{e.message}"
+    end
+
     # Content Security Policy (CSP)
     set :csp_enabled, true
     # CSP : If true, only report, don't actually enforce in the browser

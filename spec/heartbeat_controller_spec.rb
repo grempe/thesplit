@@ -24,4 +24,19 @@ describe HeartbeatController do
   def app
     described_class
   end
+
+  it 'retrieves a heartbeat' do
+    get '/'
+
+    expect(last_response.status).to eq 200
+    expect(last_response.headers['Content-Type']).to eq('application/json')
+
+    resp = JSON.parse(last_response.body)
+    expect(resp.keys).to eq(%w(status data))
+    expect(resp['status']).to eq('success')
+    expect(resp['data'].keys.sort).to eq(['redis_ok', 'rethinkdb_ok', 'timestamp', 'vault_ok'])
+    expect(resp['data']['redis_ok']).to eq(true)
+    expect(resp['data']['rethinkdb_ok']).to eq(true)
+    expect(resp['data']['vault_ok']).to eq(true)
+  end
 end

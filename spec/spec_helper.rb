@@ -30,8 +30,8 @@ Sidekiq::Logging.logger = nil
 
 def rethinkdb_flush_tables
   app.settings.r.connect(app.settings.rdb_config) do |conn|
-    %w(users blockchain).each do |tbl|
-      app.settings.r.db(app.settings.rdb_config[:db]).table(tbl).delete.run(conn)
+    %w(users blockchain heartbeat).each do |tbl|
+      app.settings.r.db(app.settings.rdb_config[:db]).table(tbl).delete().run(conn)
     end
   end
 end

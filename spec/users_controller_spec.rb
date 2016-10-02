@@ -37,19 +37,10 @@ describe UsersController do
       enc_public_key: @keys[:nacl_encryption_key_pairs_base64].first[:public_key],
       sign_public_key: @keys[:nacl_signing_key_pairs_base64].first[:public_key]
     }
-
-    # delete the test user before every run if it exists
-    app.settings.r.connect(app.settings.rdb_config) do |conn|
-      app.settings.r.table('users').get(@user[:id]).delete.run(conn)
-    end
   end
 
   context 'POST /' do
     it 'stores a new user with valid data' do
-      app.settings.r.connect(app.settings.rdb_config) do |conn|
-        expect(app.settings.r.table('users').get(@user[:id]).run(conn)).to be_nil
-      end
-
       post '/', @user
 
       expect(last_response.status).to eq 200

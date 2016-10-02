@@ -44,21 +44,10 @@ end
 $rdb_config = {
   host: ENV.fetch('RDB_HOST') { 'localhost' },
   port: ENV.fetch('RDB_PORT') { 28015 },
-  db: ENV.fetch('RDB_DB') { 'thesplit' }
+  db: ENV.fetch('RDB_DB') { env == 'test' ? 'thesplit_test' : 'thesplit' }
 }
 
-begin
-  $r = RethinkDB::RQL.new
-  $r.connect(host: $rdb_config[:host], port: $rdb_config[:port]) do |conn|
-    $r.db_create($rdb_config[:db]).run(conn)
-    $r.db($rdb_config[:db]).table_create('users').run(conn)
-  end
-rescue RethinkDB::ReqlOpFailedError => e
-  puts "#{e.class} : #{e.message}"
-rescue StandardError => e
-  puts "Cannot connect to RethinkDB database #{$rdb_config[:host]}:#{$rdb_config[:port]} (#{e.message})"
-  Process.exit(1)
-end
+$r = RethinkDB::RQL.new
 
 if ENV.fetch('TIERION_ENABLED') == 'true' && ENV.fetch('TIERION_USERNAME') && ENV.fetch('TIERION_PASSWORD')
   $blockchain = Tierion::HashApi::Client.new()

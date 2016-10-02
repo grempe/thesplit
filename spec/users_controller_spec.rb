@@ -26,15 +26,14 @@ describe UsersController do
   end
 
   before do
-    # Test SRP auth with known values
-    @username = 'user@example.com'
-    @password = 'pet sprain our trial patch bg'
+    @username = Faker::Internet.email
+    @password = Faker::Internet.password(32)
     @keys = SessionKeys.generate(@username, @password)
     @auth = SIRP::Verifier.new(4096).generate_userauth(@keys[:id], @keys[:hex_keys][0])
     @user = {
       id: @keys[:id],
-      salt: @auth[:salt],
-      verifier: @auth[:verifier],
+      srp_salt: @auth[:salt],
+      srp_verifier: @auth[:verifier],
       enc_public_key: @keys[:nacl_encryption_key_pairs_base64].first[:public_key],
       sign_public_key: @keys[:nacl_signing_key_pairs_base64].first[:public_key]
     }
@@ -129,7 +128,7 @@ describe UsersController do
     end
 
     it 'returns an error with invalid salt' do
-      post '/', @user.merge!(salt: 'foo')
+      post '/', @user.merge!(srp_salt: 'foo')
 
       expect(last_response.status).to eq 400
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -137,12 +136,28 @@ describe UsersController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status message code))
       expect(resp['status']).to eq('error')
-      expect(resp['message']).to eq('salt is invalid')
+      expect(resp['message']).to eq('srp_salt is invalid')
       expect(resp['code']).to eq(400)
     end
 
+    it 'returns an error with duplicate salt' do
+      post '/', @user
+      expect(last_response.status).to eq 200
+
+      # provide different values for all keys except the one we are testing dups for
+      auth = SIRP::Verifier.new(4096).generate_userauth(@keys[:id], @keys[:hex_keys][0])
+      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), enc_public_key: "abc#{@user[:enc_public_key]}", srp_verifier: "#{auth[:verifier]}" )
+      expect(last_response.status).to eq 409
+
+      resp = JSON.parse(last_response.body)
+      expect(resp.keys).to eq(%w(status message code))
+      expect(resp['status']).to eq('error')
+      expect(resp['message']).to eq('Data conflict, srp_salt is not unique')
+      expect(resp['code']).to eq(409)
+    end
+
     it 'returns an error with invalid verifier' do
-      post '/', @user.merge!(verifier: 'foo')
+      post '/', @user.merge!(srp_verifier: 'foo')
 
       expect(last_response.status).to eq 400
       expect(last_response.headers['Content-Type']).to eq('application/json')
@@ -150,8 +165,24 @@ describe UsersController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status message code))
       expect(resp['status']).to eq('error')
-      expect(resp['message']).to eq('verifier is invalid')
+      expect(resp['message']).to eq('srp_verifier is invalid')
       expect(resp['code']).to eq(400)
+    end
+
+    it 'returns an error with duplicate verifier' do
+      post '/', @user
+      expect(last_response.status).to eq 200
+
+      # provide different values for all keys except the one we are testing dups for
+      auth = SIRP::Verifier.new(4096).generate_userauth(@keys[:id], @keys[:hex_keys][0])
+      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), enc_public_key: "abc#{@user[:enc_public_key]}", srp_salt: "#{auth[:salt]}" )
+      expect(last_response.status).to eq 409
+
+      resp = JSON.parse(last_response.body)
+      expect(resp.keys).to eq(%w(status message code))
+      expect(resp['status']).to eq('error')
+      expect(resp['message']).to eq('Data conflict, srp_verifier is not unique')
+      expect(resp['code']).to eq(409)
     end
 
     it 'returns an error with invalid enc_public_key' do
@@ -167,20 +198,16 @@ describe UsersController do
       expect(resp['code']).to eq(400)
     end
 
-    it 'does not store a user with duplicate enc_public_key' do
+    it 'returns an error with duplicate enc_public_key' do
       post '/', @user
-
       expect(last_response.status).to eq 200
-      expect(last_response.headers['Content-Type']).to eq('application/json')
 
-      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), sign_public_key: "foo#{@user[:sign_public_key]}" )
-
+      # provide different values for all keys except the one we are testing dups for
+      auth = SIRP::Verifier.new(4096).generate_userauth(@keys[:id], @keys[:hex_keys][0])
+      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), sign_public_key: "foo#{@user[:sign_public_key]}", srp_salt: "#{auth[:salt]}", srp_verifier: "#{auth[:verifier]}" )
       expect(last_response.status).to eq 409
-      expect(last_response.headers['Content-Type']).to eq('application/json')
 
       resp = JSON.parse(last_response.body)
-      expect(resp.keys).to eq(%w(status message code))
-      expect(resp['status']).to eq('error')
       expect(resp['message']).to eq('Data conflict, enc_public_key is not unique')
       expect(resp['code']).to eq(409)
     end
@@ -198,16 +225,14 @@ describe UsersController do
       expect(resp['code']).to eq(400)
     end
 
-    it 'does not store a user with duplicate sign_public_key' do
+    it 'returns an error with duplicate sign_public_key' do
       post '/', @user
-
       expect(last_response.status).to eq 200
-      expect(last_response.headers['Content-Type']).to eq('application/json')
 
-      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), enc_public_key: "foo#{@user[:enc_public_key]}" )
-
+      # provide different values for all keys except the one we are testing dups for
+      auth = SIRP::Verifier.new(4096).generate_userauth(@keys[:id], @keys[:hex_keys][0])
+      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), enc_public_key: "abc#{@user[:enc_public_key]}", srp_salt: "#{auth[:salt]}", srp_verifier: "#{auth[:verifier]}" )
       expect(last_response.status).to eq 409
-      expect(last_response.headers['Content-Type']).to eq('application/json')
 
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status message code))
@@ -332,13 +357,13 @@ describe UsersController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(bb salt))
+      expect(resp['data'].keys.sort).to eq(%w(bb srp_salt))
       expect(resp['data']['bb'].size).to be_between(512, 2048).inclusive
-      expect(resp['data']['salt']).to eq(@user[:salt])
+      expect(resp['data']['srp_salt']).to eq(@user[:srp_salt])
 
       # process the server challenge and salt
       # must use the same client instance that was created earlier
-      client_M = client.process_challenge(@keys[:id], @keys[:hex_keys][0], resp['data']['salt'], resp['data']['bb'])
+      client_M = client.process_challenge(@keys[:id], @keys[:hex_keys][0], resp['data']['srp_salt'], resp['data']['bb'])
 
       # the client should have a 'K' shared secret
       expect(client.K.length).to eq(64)

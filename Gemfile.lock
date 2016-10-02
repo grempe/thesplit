@@ -15,6 +15,8 @@ GEM
     contracts (0.14.0)
     diff-lcs (1.2.5)
     dotenv (2.1.1)
+    faker (1.6.6)
+      i18n (~> 0.5)
     fasterer (0.3.2)
       colorize (~> 0.7)
       ruby_parser (~> 3.7)
@@ -169,6 +171,7 @@ DEPENDENCIES
   activesupport (~> 5.0)
   bundler
   dotenv (~> 2.1)
+  faker
   fasterer
   guard-puma
   guard-rspec

@@ -44,4 +44,5 @@ group :test, :development do
   gem 'wwtd'
   gem 'mock_redis', '~> 0.17'
   gem 'fasterer'
+  gem 'faker'
 end

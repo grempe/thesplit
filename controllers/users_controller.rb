@@ -26,11 +26,11 @@ class UsersController < ApplicationController
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
 
-    param :salt, String, required: true, min_length: 20, max_length: 64,
-                         format: settings.hex_regex
-
-    param :verifier, String, required: true, max_length: 1024,
+    param :srp_salt, String, required: true, min_length: 20, max_length: 64,
                              format: settings.hex_regex
+
+    param :srp_verifier, String, required: true, max_length: 1024,
+                                 format: settings.hex_regex
 
     param :enc_public_key, String, required: true, max_length: 64,
                                    format: settings.base64_regex
@@ -50,7 +50,7 @@ class UsersController < ApplicationController
     # another user with one of these keys could be submitted in the moment
     # before this new user is committed. For explanation see:
     # https://github.com/rethinkdb/rethinkdb/issues/1716
-    ['enc_public_key', 'sign_public_key'].each do |k|
+    ['srp_salt', 'srp_verifier', 'enc_public_key', 'sign_public_key'].each do |k|
       settings.r.connect(settings.rdb_config) do |conn|
         unless settings.r.table('users').get_all(params[k], {index: k}).is_empty().run(conn)
           halt 409, error_json("Data conflict, #{k} is not unique", 409)
@@ -101,7 +101,7 @@ class UsersController < ApplicationController
     # and the non-public srp_verifier
     settings.r.connect(settings.rdb_config) do |conn|
       settings.r.table('users').insert(
-        resp.merge(srp_salt: params['salt'], srp_verifier: params['verifier'])
+        resp.merge(srp_salt: params['srp_salt'], srp_verifier: params['srp_verifier'])
       ).run(conn)
     end
 
@@ -175,7 +175,7 @@ class UsersController < ApplicationController
     $redis.set(session_key, session.to_json)
     $redis.expire(session_key, 5)
 
-    return success_json(salt: session[:challenge][:salt], bb: session[:challenge][:B])
+    return success_json(srp_salt: session[:challenge][:salt], bb: session[:challenge][:B])
   end
 
   options '/:id/srp/challenge' do

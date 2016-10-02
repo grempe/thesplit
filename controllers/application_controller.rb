@@ -133,6 +133,7 @@ class ApplicationController < Sinatra::Base
     r = RethinkDB::RQL.new
     set :r, r
 
+    # create rethinkdb
     begin
       r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
         r.db_create(rdb_config[:db]).run(conn)
@@ -141,28 +142,27 @@ class ApplicationController < Sinatra::Base
       puts "#{e.class} : #{e.message}"
     end
 
-    begin
-      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
-        r.db(rdb_config[:db]).table_create('users').run(conn)
+    # create rethinkdb tables if they don't already exist
+    ['users', 'blockchain', 'heartbeat'].each do |tbl|
+      begin
+        r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
+          r.db(rdb_config[:db]).table_create(tbl).run(conn)
+        end
+      rescue RethinkDB::ReqlOpFailedError => e
+        puts "#{e.class} : #{e.message}"
       end
-    rescue RethinkDB::ReqlOpFailedError => e
-      puts "#{e.class} : #{e.message}"
     end
 
-    begin
-      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
-        r.db(rdb_config[:db]).table_create('blockchain').run(conn)
+    # create rethinkdb secondary indexes, these are only for fast lookup,
+    # and do not constrain to unique values.
+    ['enc_public_key', 'sign_public_key', 'srp_salt', 'srp_verifier'].each do |idx|
+      begin
+        r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
+          r.db(rdb_config[:db]).table('users').index_create(idx).run(conn)
+        end
+      rescue RethinkDB::ReqlOpFailedError => e
+        puts "#{e.class} : #{e.message}"
       end
-    rescue RethinkDB::ReqlOpFailedError => e
-      puts "#{e.class} : #{e.message}"
-    end
-
-    begin
-      r.connect(host: rdb_config[:host], port: rdb_config[:port]) do |conn|
-        r.db(rdb_config[:db]).table_create('heartbeat').run(conn)
-      end
-    rescue RethinkDB::ReqlOpFailedError => e
-      puts "#{e.class} : #{e.message}"
     end
 
     # Content Security Policy (CSP)

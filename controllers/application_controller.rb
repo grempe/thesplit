@@ -205,10 +205,15 @@ class ApplicationController < Sinatra::Base
       csp << 'upgrade-insecure-requests' if settings.production?
       csp << 'block-all-mixed-content' if settings.production?
       csp << 'referrer no-referrer'
-      csp << 'report-uri /csp'
 
-      header = 'Content-Security-Policy'
-      header += '-Report-Only' if settings.csp_report_only?
+      if settings.csp_report_only?
+        csp << 'report-uri https://grempe.report-uri.io/r/default/csp/reportOnly'
+        header = 'Content-Security-Policy-Report-Only'
+      else
+        csp << 'report-uri https://grempe.report-uri.io/r/default/csp/enforce'
+        header = 'Content-Security-Policy'
+      end
+
       response.headers[header] = csp.join(';')
     end
 

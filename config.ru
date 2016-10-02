@@ -58,10 +58,6 @@ Rack::Attack.throttle('heartbeat/req/ip', limit: 10, period: 1.minute) do |req|
   req.ip if req.path.start_with?('/heartbeat')
 end
 
-Rack::Attack.throttle('csp/req/ip', limit: 10, period: 1.minute) do |req|
-  req.ip if req.path.start_with?('/csp')
-end
-
 Rack::Attack.throttle('blockchain/req/ip', limit: 10, period: 1.minute) do |req|
   req.ip if req.path.start_with?('/blockchain_callback')
 end
@@ -115,7 +111,6 @@ end
 # Set strict no-cache headers for these endpoints
 use Rack::CacheControlHeaders, '/sidekiq'
 use Rack::CacheControlHeaders, '/heartbeat'
-use Rack::CacheControlHeaders, '/csp'
 use Rack::CacheControlHeaders, '/blockchain_callback'
 use Rack::CacheControlHeaders, '/api'
 
@@ -147,7 +142,6 @@ end if ENV.fetch('RACK_ENV') == 'production'
 map('/sidekiq') { run Sidekiq::Web }
 
 map('/heartbeat') { run HeartbeatController }
-map('/csp') { run ContentSecurityPolicyController }
 map('/blockchain_callback') { run BlockchainCallbackController }
 map('/api/v1/users') { run UsersController }
 map('/api/v1/secrets') { run SecretsController }

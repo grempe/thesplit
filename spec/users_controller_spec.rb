@@ -167,6 +167,24 @@ describe UsersController do
       expect(resp['code']).to eq(400)
     end
 
+    it 'does not store a user with duplicate enc_public_key' do
+      post '/', @user
+
+      expect(last_response.status).to eq 200
+      expect(last_response.headers['Content-Type']).to eq('application/json')
+
+      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), sign_public_key: "foo#{@user[:sign_public_key]}" )
+
+      expect(last_response.status).to eq 409
+      expect(last_response.headers['Content-Type']).to eq('application/json')
+
+      resp = JSON.parse(last_response.body)
+      expect(resp.keys).to eq(%w(status message code))
+      expect(resp['status']).to eq('error')
+      expect(resp['message']).to eq('Data conflict, enc_public_key is not unique')
+      expect(resp['code']).to eq(409)
+    end
+
     it 'returns an error with invalid sign_public_key' do
       post '/', @user.merge!(sign_public_key: 'foo&')
 
@@ -178,6 +196,24 @@ describe UsersController do
       expect(resp['status']).to eq('error')
       expect(resp['message']).to eq('sign_public_key is invalid')
       expect(resp['code']).to eq(400)
+    end
+
+    it 'does not store a user with duplicate sign_public_key' do
+      post '/', @user
+
+      expect(last_response.status).to eq 200
+      expect(last_response.headers['Content-Type']).to eq('application/json')
+
+      post '/', @user.merge!( id: Digest::SHA256.hexdigest('abc123'), enc_public_key: "foo#{@user[:enc_public_key]}" )
+
+      expect(last_response.status).to eq 409
+      expect(last_response.headers['Content-Type']).to eq('application/json')
+
+      resp = JSON.parse(last_response.body)
+      expect(resp.keys).to eq(%w(status message code))
+      expect(resp['status']).to eq('error')
+      expect(resp['message']).to eq('Data conflict, sign_public_key is not unique')
+      expect(resp['code']).to eq(409)
     end
   end
 

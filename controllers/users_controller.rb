@@ -38,9 +38,23 @@ class UsersController < ApplicationController
     param :sign_public_key, String, required: true, max_length: 64,
                                     format: settings.base64_regex
 
+    # confirm id is unique
     settings.r.connect(settings.rdb_config) do |conn|
       if settings.r.table('users').get(params['id']).run(conn).present?
         halt 409, error_json('Data conflict, user with ID already exists', 409)
+      end
+    end
+
+    # Ensure these fields are unique at this moment (not atomic). Only
+    # a best attempt at validating uniqueness since it is possible that
+    # another user with one of these keys could be submitted in the moment
+    # before this new user is committed. For explanation see:
+    # https://github.com/rethinkdb/rethinkdb/issues/1716
+    ['enc_public_key', 'sign_public_key'].each do |k|
+      settings.r.connect(settings.rdb_config) do |conn|
+        unless settings.r.table('users').get_all(params[k], {index: k}).is_empty().run(conn)
+          halt 409, error_json("Data conflict, #{k} is not unique", 409)
+        end
       end
     end
 

@@ -44,18 +44,58 @@ class UsersController < ApplicationController
       end
     end
 
+    # FIXME : verify the incoming keys by requiring the sender to encrypt
+    # and sign data that we can verify now using the keys provided
+
+    created_at = Time.now.utc.iso8601
+
+    # Submit a signed copy of the submitted data to the blockchain
+    # to allow independant client verfication.
+
+    verification_items = [
+      params['id'],
+      params['id'].length,
+      params['enc_public_key'],
+      params['enc_public_key'].length,
+      params['sign_public_key'],
+      params['sign_public_key'].length,
+      created_at
+    ].join(':')
+
+    verification_hash = Digest::SHA256.hexdigest(verification_items)
+    verification_hash_signature = settings.signing_key.sign(verification_hash)
+    verification_hash_signature_base64 = Base64.strict_encode64(verification_hash_signature)
+    # ensure the verification works, or throw an exception
+    settings.verify_key.verify(verification_hash_signature, verification_hash)
+    blockchain_hash = Digest::SHA256.hexdigest(verification_hash_signature)
+
+    # The critical user data to be sent back to the client along with
+    # hashes and signatures needed to later verify the integrity of
+    # the encryption and signature public keys for that user. These
+    # will allow the owner of an account, or any other party, to
+    # independently verify key integrity or detect changes after TOFU.
+    resp = { id: params['id'],
+             enc_public_key: params['enc_public_key'],
+             sign_public_key: params['sign_public_key'],
+             created_at: created_at,
+             verification_hash: verification_hash,
+             verification_hash_signature_base64: verification_hash_signature_base64,
+             verify_key_base64: settings.verify_key_base64,
+             blockchain_hash: blockchain_hash }
+
+    # Save the user data along with the semi-public srp_salt
+    # and the non-public srp_verifier
     settings.r.connect(settings.rdb_config) do |conn|
       settings.r.table('users').insert(
-        id: params['id'],
-        salt: params['salt'],
-        verifier: params['verifier'],
-        enc_public_key: params['enc_public_key'],
-        sign_public_key: params['sign_public_key'],
-        created_at: Time.now.utc.iso8601
+        resp.merge(srp_salt: params['salt'], srp_verifier: params['verifier'])
       ).run(conn)
     end
 
-    return success_json
+    # The user data has been saved to the DB, send the hash of its important
+    # values to the blockchain for later proof of existence.
+    BlockchainSendHashWorker.perform_async(blockchain_hash)
+
+    return success_json(resp)
   end
 
   options '/' do
@@ -72,14 +112,18 @@ class UsersController < ApplicationController
       settings.r.table('users').get(params['id']).run(conn)
     end
 
-    raise Sinatra::NotFound if user.blank? ||
-                               user['id'].blank? ||
-                               user['enc_public_key'].blank? ||
-                               user['sign_public_key'].blank?
+    raise Sinatra::NotFound if user.blank?
 
-    return success_json(id: params['id'],
-                        enc_public_key: user['enc_public_key'],
-                        sign_public_key: user['sign_public_key'])
+    resp = { id: params['id'] }
+
+    [ 'enc_public_key', 'sign_public_key', 'created_at',
+      'verification_hash', 'verification_hash_signature_base64',
+      'verify_key_base64', 'blockchain_hash' ].each do |key|
+      raise Sinatra::NotFound if user[key].blank?
+      resp[key] = user[key]
+    end
+
+    return success_json(resp)
   end
 
   options '/:id' do
@@ -101,21 +145,21 @@ class UsersController < ApplicationController
       settings.r.table('users').get(params['id']).run(conn)
     end
 
-    if user.blank? || user['id'].blank? || user['verifier'].blank? || user['salt'].blank?
+    if user.blank? || user['id'].blank? || user['srp_verifier'].blank? || user['srp_salt'].blank?
       halt 401, error_json('unauthorized', 401)
     end
 
     # Generates B (bb) and other proof attributes needed by the client
     # for the challenge phase
     verifier = SIRP::Verifier.new(4096)
-    session = verifier.get_challenge_and_proof(user['id'], user['verifier'], user['salt'], params[:aa])
+    session = verifier.get_challenge_and_proof(user['id'], user['srp_verifier'], user['srp_salt'], params[:aa])
 
     # Store the ephemeral challenge and proof temporarily in Redis
     # This state is needed for the SRP authenticate phase to complete.
-    # Expire this key automatically in one minute.
+    # Expire this key automatically after a short duration.
     session_key = "srp:challenge:#{user['id']}"
     $redis.set(session_key, session.to_json)
-    $redis.expire(session_key, 60)
+    $redis.expire(session_key, 5)
 
     return success_json(salt: session[:challenge][:salt], bb: session[:challenge][:B])
   end

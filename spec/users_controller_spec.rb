@@ -59,11 +59,42 @@ describe UsersController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data']).to be_nil
+      expect(resp['data'].keys.sort).to eq(["blockchain_hash", "created_at", "enc_public_key", "id", "sign_public_key", "verification_hash", "verification_hash_signature_base64", "verify_key_base64"])
 
       app.settings.r.connect(app.settings.rdb_config) do |conn|
-        expect(app.settings.r.table('users').get(@user[:id]).run(conn).keys.sort).to eq(%w(created_at enc_public_key id salt sign_public_key verifier))
+        expect(app.settings.r.table('users').get(@user[:id]).run(conn).keys.sort).to eq(["blockchain_hash", "created_at", "enc_public_key", "id", "sign_public_key", "srp_salt", "srp_verifier", "verification_hash", "verification_hash_signature_base64", "verify_key_base64"])
       end
+    end
+
+    it 'returns server signed data that can be cryptographically verified with only public info' do
+      post '/', @user
+
+      expect(last_response.status).to eq 200
+      resp = JSON.parse(last_response.body)
+
+      # collect the data that will be hashed and signed
+      verification_items = [
+        resp['data']['id'],
+        resp['data']['id'].length,
+        resp['data']['enc_public_key'],
+        resp['data']['enc_public_key'].length,
+        resp['data']['sign_public_key'],
+        resp['data']['sign_public_key'].length,
+        resp['data']['created_at']
+      ].join(':')
+
+      # re-create the SHA256 hash that will be signed
+      verification_hash = Digest::SHA256.hexdigest(verification_items)
+      expect(resp['data']['verification_hash']).to eq verification_hash
+
+      # Rehydrate the signature public key, and signature, and then test the verification
+      verify_key = RbNaCl::VerifyKey.new(Base64.strict_decode64(resp['data']['verify_key_base64']))
+      verification_hash_signature = Base64.strict_decode64(resp['data']['verification_hash_signature_base64'])
+      verify_key.verify(verification_hash_signature, verification_hash)
+
+      # Verify that the blockchain hash is indeed the SHA256 of the signature bytestring
+      # The blockchain_hash is what can actually be found on a BTC OP_RETURN transaction.
+      expect(resp['data']['blockchain_hash']).to eq(Digest::SHA256.hexdigest(verification_hash_signature))
     end
 
     it 'does not store a user with duplicate ID' do
@@ -164,9 +195,7 @@ describe UsersController do
 
   context 'GET /:id' do
     before do
-      app.settings.r.connect(app.settings.rdb_config) do |conn|
-        app.settings.r.table('users').insert(@user, conflict: 'replace').run(conn)
-      end
+      post '/', @user
     end
 
     it 'retrieves a user with a valid ID' do
@@ -178,10 +207,41 @@ describe UsersController do
       resp = JSON.parse(last_response.body)
       expect(resp.keys).to eq(%w(status data))
       expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(enc_public_key id sign_public_key))
+      expect(resp['data'].keys.sort).to eq(["blockchain_hash", "created_at", "enc_public_key", "id", "sign_public_key", "verification_hash", "verification_hash_signature_base64", "verify_key_base64"])
       expect(resp['data']['id']).to eq(@user[:id])
       expect(resp['data']['enc_public_key']).to eq(@user[:enc_public_key])
       expect(resp['data']['sign_public_key']).to eq(@user[:sign_public_key])
+    end
+
+    it 'returns server signed data that can be cryptographically verified with only public info' do
+      get "/#{@user[:id]}"
+
+      expect(last_response.status).to eq 200
+      resp = JSON.parse(last_response.body)
+
+      # collect the data that will be hashed and signed
+      verification_items = [
+        resp['data']['id'],
+        resp['data']['id'].length,
+        resp['data']['enc_public_key'],
+        resp['data']['enc_public_key'].length,
+        resp['data']['sign_public_key'],
+        resp['data']['sign_public_key'].length,
+        resp['data']['created_at']
+      ].join(':')
+
+      # re-create the SHA256 hash that will be signed
+      verification_hash = Digest::SHA256.hexdigest(verification_items)
+      expect(resp['data']['verification_hash']).to eq verification_hash
+
+      # Rehydrate the signature public key, and signature, and then test the verification
+      verify_key = RbNaCl::VerifyKey.new(Base64.strict_decode64(resp['data']['verify_key_base64']))
+      verification_hash_signature = Base64.strict_decode64(resp['data']['verification_hash_signature_base64'])
+      verify_key.verify(verification_hash_signature, verification_hash)
+
+      # Verify that the blockchain hash is indeed the SHA256 of the signature bytestring
+      # The blockchain_hash is what can actually be found on a BTC OP_RETURN transaction.
+      expect(resp['data']['blockchain_hash']).to eq(Digest::SHA256.hexdigest(verification_hash_signature))
     end
 
     it 'returns an error with invalid ID' do

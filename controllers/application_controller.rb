@@ -83,6 +83,22 @@ class ApplicationController < Sinatra::Base
     # Cache-Control for static pages
     set :static_cache_control, [:public, max_age: 30.days, s_maxage: 24.hours]
 
+    # SESSION KEYS
+
+    set :session_keys_secret, ENV.fetch('SESSION_KEYS_SECRET')
+    set :session_keys, SessionKeys.generate('thesplit.is', settings.session_keys_secret)
+
+    set :hmac_key, settings.session_keys[:byte_keys][0]
+    set :hmac_key_hex, settings.session_keys[:hex_keys][0]
+
+    set :signing_key, settings.session_keys[:nacl_signing_key_pairs][1][:secret_key]
+    set :verify_key, settings.session_keys[:nacl_signing_key_pairs][1][:public_key]
+    set :verify_key_base64, settings.session_keys[:nacl_signing_key_pairs_base64][1][:public_key]
+
+    set :private_key, settings.session_keys[:nacl_encryption_key_pairs][2][:secret_key]
+    set :public_key, settings.session_keys[:nacl_encryption_key_pairs][2][:public_key]
+    set :public_key_base64, settings.session_keys[:nacl_encryption_key_pairs_base64][2][:public_key]
+
     # REDIS
 
     redis_uri = URI.parse(ENV.fetch('REDIS_URL') { 'redis://127.0.0.1:6379' })

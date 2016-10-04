@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.2.5'
+ruby '2.3.1'
 
 # current heroku supported version
 gem 'bundler'
@@ -32,6 +32,7 @@ gem 'session_keys', '1.0.0'
 gem 'rethinkdb', '~> 2.3'
 gem 'sirp', '~> 2.0.0'
 gem 'tss', '~> 0.4.1'
+gem 'macaroons', '~> 0.7', git: 'https://github.com/localmed/ruby-macaroons.git'
 
 group :test, :development do
   gem 'rake'
@@ -39,7 +40,7 @@ group :test, :development do
   gem 'rack-test'
   gem 'pry'
   gem 'pry-byebug'
-  gem 'guard-puma'
+  gem 'guard-puma', require: false
   gem 'guard-rspec', require: false
   gem 'wwtd'
   gem 'mock_redis', '~> 0.17'

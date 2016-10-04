@@ -3,9 +3,9 @@ guard :puma, port: 3000 do
   watch(%r{^config|controllers|models|workers|helpers/.*})
 end
 
-guard :rspec, cmd: 'bundle exec rspec' do
+guard :rspec, cmd: 'rspec' do
   watch('spec/spec_helper.rb') { 'spec' }
-  watch(%r{^spec/.+_spec\.rb$})
+  watch(%r{^spec/.+_spec\.rb$}) { 'spec' }
   watch(%r{^controllers/(.+)\.rb$}) { |m| "spec/#{m[1]}_spec.rb" }
   watch(%r{^helpers/(.+)\.rb$}) { 'spec' }
   watch(%r{^models/(.+)\.rb$}) { 'spec' }

@@ -20,8 +20,7 @@
 
 # Handle all user registration and SRP authentication
 class UsersController < ApplicationController
-  # POST a new user, pass in TOFU SRP values
-  # Expects id, salt, verifier, NaCl enc public_key, NaCl signing public_key
+  # POST a new user, pass in TOFU SRP values and public keys
   post '/' do
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex

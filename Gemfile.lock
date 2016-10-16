@@ -1,12 +1,3 @@
-GIT
-  remote: https://github.com/localmed/ruby-macaroons.git
-  revision: 7f79de63d4036c07dbf43cdced8403276dbab209
-  specs:
-    macaroons (0.7.0)
-      multi_json (~> 1.10)
-      rbnacl (~> 3.2)
-      rbnacl-libsodium (~> 1.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -15,6 +6,7 @@ GEM
       i18n (~> 0.7)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
+    ast (2.3.0)
     binary_struct (2.1.0)
     byebug (9.0.6)
     coderay (1.1.1)
@@ -55,6 +47,10 @@ GEM
     i18n (0.7.0)
     jsender (0.2.2)
     json (2.0.2)
+    json_web_token (0.3.2)
+      json (>= 1.8.3)
+    jwt_claims (0.1.0)
+      json_web_token (~> 0.3)
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
@@ -69,6 +65,9 @@ GEM
     notiffany (0.1.1)
       nenv (~> 0.1)
       shellany (~> 0.0)
+    parser (2.3.1.4)
+      ast (~> 2.2)
+    powerpack (0.1.1)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -83,11 +82,17 @@ GEM
     rack-contrib (1.4.0)
       git-version-bump (~> 0.15)
       rack (~> 1.4)
+    rack-json_web_token_auth (0.2.0)
+      contracts (~> 0.14)
+      hashie (~> 3.4)
+      json_web_token (~> 0.3.2)
+      jwt_claims (~> 0.1)
     rack-protection (1.5.3)
       rack
     rack-robustness (1.1.0)
     rack-test (0.6.3)
       rack (>= 1.0)
+    rainbow (2.1.0)
     rake (11.3.0)
     rb-fsevent (0.9.7)
     rb-inotify (0.9.7)
@@ -120,6 +125,13 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
+    rubocop (0.43.0)
+      parser (>= 2.3.1.1, < 3.0)
+      powerpack (~> 0.1)
+      rainbow (>= 1.99.1, < 3.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (~> 1.0, >= 1.0.1)
+    ruby-progressbar (1.8.1)
     ruby_dep (1.4.0)
     ruby_parser (3.8.2)
       sexp_processor (~> 4.1)
@@ -162,7 +174,7 @@ GEM
       hashie (~> 3.4)
       httparty (~> 0.13)
     tilt (2.0.5)
-    tss (0.4.1)
+    tss (0.4.2)
       activesupport (>= 4.0.0)
       binary_struct (~> 2.1)
       contracts (~> 0.14)
@@ -170,6 +182,8 @@ GEM
       thor (~> 0.19)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
+    unicode-display_width (1.1.1)
+    uuidtools (2.1.5)
     vault (0.6.0)
     wwtd (1.3.0)
     zxcvbn-ruby (0.1.1)
@@ -187,7 +201,7 @@ DEPENDENCIES
   guard-rspec
   jsender (~> 0.2)
   json (~> 2.0)
-  macaroons (~> 0.7)!
+  json_web_token (~> 0.3.2)
   mock_redis (~> 0.17)
   pry
   pry-byebug
@@ -195,6 +209,7 @@ DEPENDENCIES
   rack (~> 1.6)
   rack-attack (~> 5.0)
   rack-contrib (~> 1.4)
+  rack-json_web_token_auth (~> 0.2.0)
   rack-robustness (~> 1.1)
   rack-test
   rake
@@ -206,6 +221,7 @@ DEPENDENCIES
   rethinkdb (~> 2.3)
   rollbar (~> 2.12)
   rspec
+  rubocop
   session_keys (= 1.0.0)
   sidekiq (~> 4.2)
   sidekiq-scheduler (~> 2.0)
@@ -215,7 +231,8 @@ DEPENDENCIES
   sirp (~> 2.0.0)
   sysrandom (~> 1.0.3, >= 1.0.3)
   tierion (~> 1.3)
-  tss (~> 0.4.1)
+  tss (~> 0.4.2)
+  uuidtools (~> 2.1.5)
   vault (~> 0.6)
   wwtd
 
@@ -223,4 +240,4 @@ RUBY VERSION
    ruby 2.3.1p112
 
 BUNDLED WITH
-   1.13.1
+   1.13.2

@@ -32,12 +32,6 @@ class ApplicationController < Sinatra::Base
   helpers Sinatra::Param
 
   #################################################
-  # Extensions
-  #################################################
-
-  register Sinatra::CrossOrigin
-
-  #################################################
   # Config Settings
   #################################################
 
@@ -62,17 +56,6 @@ class ApplicationController < Sinatra::Base
     set :secrets_max_length, 64.kilobytes
     set :base64_regex, %r{^[a-zA-Z0-9+=\/\-\_]+$}
     set :hex_regex, /^[a-f0-9]+$/
-
-    # Sinatra CORS
-    # https://github.com/britg/sinatra-cross_origin
-    # http://www.html5rocks.com/en/tutorials/cors/
-    set :cross_origin, true
-    set :allow_origin, :any
-    set :allow_methods, [:head, :get, :put, :post, :delete, :options]
-    set :allow_credentials, false
-    set :allow_headers, ['*', 'Content-Type', 'Accept', 'AUTHORIZATION', 'Cache-Control']
-    set :max_age, 2.days
-    set :expose_headers, ['Cache-Control', 'Content-Language', 'Content-Type', 'Expires', 'Last-Modified', 'Pragma']
 
     # Sinatra Param
     # https://github.com/mattt/sinatra-param
@@ -240,11 +223,6 @@ class ApplicationController < Sinatra::Base
   get '/' do
     content_type :html
     erb :index
-  end
-
-  options '/' do
-    response.headers['Allow'] = 'HEAD,GET'
-    200
   end
 
   # Sinatra::NotFound handler

@@ -67,11 +67,6 @@ class SecretsController < ApplicationController
     return success_json(created_at: t.iso8601, expires_at: t_exp.iso8601)
   end
 
-  options '/' do
-    response.headers['Allow'] = 'POST'
-    200
-  end
-
   delete '/:id' do
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
@@ -123,11 +118,6 @@ class SecretsController < ApplicationController
     return success_json(vault_secret.data)
   end
 
-  options '/:id' do
-    response.headers['Allow'] = 'GET,DELETE'
-    200
-  end
-
   get '/:id/receipt' do
     param :id, String, required: true, min_length: 64, max_length: 64,
                        format: settings.hex_regex
@@ -158,11 +148,6 @@ class SecretsController < ApplicationController
     obj[:confirmed] = confirmed.present? ? confirmed.utc.iso8601 : nil
 
     return success_json(obj)
-  end
-
-  options '/:id/receipt' do
-    response.headers['Allow'] = 'GET'
-    200
   end
 
   def vault_token_24h_1x

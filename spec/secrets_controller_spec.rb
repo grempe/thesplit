@@ -25,18 +25,6 @@ describe SecretsController do
     described_class
   end
 
-  context 'OPTIONS /' do
-    it 'returns expected result' do
-      options '/'
-
-      expect(last_response.headers['Allow']).to eq('POST')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
-    end
-  end
-
   context 'POST /' do
     before do
       Vault.logical.delete("secret/fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98")
@@ -65,18 +53,6 @@ describe SecretsController do
       expect(resp['data'].keys).to eq(%w(created_at expires_at))
 
       expect(Vault.logical.read("secret/#{client_hash}").data[:token]).to match(/^[a-f0-9\-]+$/)
-    end
-  end
-
-  context 'OPTIONS /:id' do
-    it 'returns expected result' do
-      options '/fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98'
-
-      expect(last_response.headers['Allow']).to eq('GET,DELETE')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
     end
   end
 

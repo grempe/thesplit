@@ -66,9 +66,4 @@ class HeartbeatController < ApplicationController
 
     return success_json(resp)
   end
-
-  options '/' do
-    response.headers['Allow'] = 'HEAD,GET'
-    200
-  end
 end

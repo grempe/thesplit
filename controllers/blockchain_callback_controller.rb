@@ -49,9 +49,4 @@ class BlockchainCallbackController < ApplicationController
 
     return success_json
   end
-
-  options '/' do
-    response.headers['Allow'] = 'POST'
-    200
-  end
 end

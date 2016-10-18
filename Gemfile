@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 ruby '2.3.1'
 
-# current heroku supported version
 gem 'bundler'
 
 # replace SecureRandom
@@ -15,10 +14,10 @@ gem 'rack', '~> 1.6'
 gem 'rack-contrib', '~> 1.4', require: 'rack/contrib'
 gem 'rack-attack', '~> 5.0', require: 'rack/attack'
 gem 'rack-robustness', '~> 1.1', require: 'rack/robustness'
+gem 'rack-cors', '~> 0.4.0', require: 'rack/cors'
 gem 'rack-json_web_token_auth', '~> 0.2.0', require: 'rack/json_web_token_auth'
 gem 'sinatra', '~> 1.4', require: 'sinatra/base'
 gem 'sinatra-param', '~> 1.4', require: 'sinatra/param'
-gem 'sinatra-cross_origin', '~> 0.3', require: 'sinatra/cross_origin'
 gem 'dotenv', '~> 2.1'
 gem 'activesupport', '~> 5.0'
 gem 'redis', '~> 3.3'

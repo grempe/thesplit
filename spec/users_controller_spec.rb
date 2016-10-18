@@ -233,18 +233,6 @@ describe UsersController do
     end
   end
 
-  context 'OPTIONS /' do
-    it 'returns expected result' do
-      options '/'
-
-      expect(last_response.headers['Allow']).to eq('POST')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
-    end
-  end
-
   context 'GET /:id' do
     before do
       post '/', @user
@@ -310,18 +298,6 @@ describe UsersController do
     end
   end
 
-  context 'OPTIONS /:id' do
-    it 'returns expected result' do
-      options "/#{@user[:id]}"
-
-      expect(last_response.headers['Allow']).to eq('GET')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
-    end
-  end
-
   context 'POST /:id/srp/*' do
     it 'completes two-phase SRP challenge/authenticate' do
       # create a test user
@@ -371,30 +347,6 @@ describe UsersController do
       expect(resp['status']).to eq('success')
       expect(resp['data'].keys.sort).to eq(%w(hamk))
       expect(resp['data']['hamk'].size).to eq(64)
-    end
-  end
-
-  context 'OPTIONS /:id/srp/challenge' do
-    it 'returns expected result' do
-      options "/#{@user[:id]}/srp/challenge"
-
-      expect(last_response.headers['Allow']).to eq('POST')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
-    end
-  end
-
-  context 'OPTIONS /:id/srp/authenticate' do
-    it 'returns expected result' do
-      options "/#{@user[:id]}/srp/authenticate"
-
-      expect(last_response.headers['Allow']).to eq('POST')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
     end
   end
 end

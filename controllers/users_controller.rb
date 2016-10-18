@@ -58,7 +58,8 @@ class UsersController < ApplicationController
     end
 
     # FIXME : verify the incoming keys by requiring the sender to encrypt
-    # and sign data that we can verify now using the keys provided
+    # and sign data that we can verify now using the keys provided. Require
+    # user to request a nonce first that they can encrypt + sign and send?
 
     created_at = Time.now.utc.iso8601
 
@@ -111,11 +112,6 @@ class UsersController < ApplicationController
     return success_json(resp)
   end
 
-  options '/' do
-    response.headers['Allow'] = 'POST'
-    200
-  end
-
   # GET public user info by id
   get '/:id' do
     param :id, String, required: true, min_length: 64, max_length: 64,
@@ -137,11 +133,6 @@ class UsersController < ApplicationController
     end
 
     return success_json(resp)
-  end
-
-  options '/:id' do
-    response.headers['Allow'] = 'GET'
-    200
   end
 
   # Client => Server: id, A (aa)
@@ -177,11 +168,6 @@ class UsersController < ApplicationController
     return success_json(srp_salt: session[:challenge][:salt], bb: session[:challenge][:B])
   end
 
-  options '/:id/srp/challenge' do
-    response.headers['Allow'] = 'POST'
-    200
-  end
-
   # Client => Server: id, M (mm)
   # Server => Client: H(AMK)
   post '/:id/srp/authenticate' do
@@ -213,8 +199,4 @@ class UsersController < ApplicationController
     return success_json(hamk: server_H_AMK)
   end
 
-  options '/:id/srp/authenticate' do
-    response.headers['Allow'] = 'POST'
-    200
-  end
 end

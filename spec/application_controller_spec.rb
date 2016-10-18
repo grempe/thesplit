@@ -34,16 +34,4 @@ describe ApplicationController do
       expect(last_response.status).to eq 200
     end
   end
-
-  context 'OPTIONS /' do
-    it 'returns expected result' do
-      options '/'
-
-      expect(last_response.headers['Allow']).to eq('HEAD,GET')
-      expect(last_response.headers['Content-Type']).to eq('application/json')
-      expect(last_response.headers['Content-Length']).to eq('0')
-      expect(last_response.body).to eq('')
-      expect(last_response.status).to eq 200
-    end
-  end
 end

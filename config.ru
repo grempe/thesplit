@@ -63,17 +63,50 @@ Rack::Attack.throttle('blockchain/req/ip', limit: 10, period: 1.minute) do |req|
 end
 
 Rack::Attack.throttled_response = lambda do |env|
-    now = Time.now
-    match_data = env['rack.attack.match_data']
+  now = Time.now
+  match_data = env['rack.attack.match_data']
 
-    headers = {
-      'X-RateLimit-Limit' => match_data[:limit].to_s,
-      'X-RateLimit-Remaining' => '0',
-      'X-RateLimit-Reset' => (now + (match_data[:period] - now.to_i % match_data[:period])).to_s
-    }
+  headers = {
+    'X-RateLimit-Limit' => match_data[:limit].to_s,
+    'X-RateLimit-Remaining' => '0',
+    'X-RateLimit-Reset' => (now + (match_data[:period] - now.to_i % match_data[:period])).to_s
+  }
 
-    [ 429, headers, ["Throttled\n"]]
+  [ 429, headers, ["Throttled\n"]]
+end
+
+#################################################
+# Middleware - Rack::Cors
+#################################################
+
+# TESTING :
+#
+# See:
+#   http://stackoverflow.com/questions/12173990/how-can-you-debug-a-cors-request-with-curl#12179364
+#
+# Simple Example:
+#
+#   curl -H "Origin:*" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: X-Requested-With" -X OPTIONS --verbose http://localhost:3000/heartbeat
+#   curl -H "Origin:*" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: X-Requested-With" -H $TOKEN -X OPTIONS --verbose http://localhost:3000/heartbeat
+#
+cors_debug = ENV.fetch('RACK_ENV') == 'production' ? false : true
+use Rack::Cors, debug: cors_debug do
+  allow do
+    origins '*'
+    resource '/heartbeat', max_age: 3600, headers: :any, methods: [:get]
+    resource '/sidekiq', max_age: 3600, headers: :any, methods: [:get, :post]
+    resource '/blockchain_callback', max_age: 3600, headers: :any, methods: [:post]
+    resource '/api/v1/users', max_age: 3600, headers: :any, methods: [:post]
+    resource '/api/v1/users/*', max_age: 3600, headers: :any, methods: [:get]
+    resource '/api/v1/users/*/srp/challenge', max_age: 3600, headers: :any, methods: [:post]
+    resource '/api/v1/users/*/srp/authenticate', max_age: 3600, headers: :any, methods: [:post]
+    resource '/api/v1/secrets', max_age: 3600, headers: :any, methods: [:get, :post]
+    resource '/api/v1/secrets/*', max_age: 3600, headers: :any, methods: [:get, :delete]
+    resource '/api/v1/secrets/*/receipt', max_age: 3600, headers: :any, methods: [:get]
+    resource '/', max_age: 3600, headers: :any, methods: [:get]
   end
+end
+
 
 #################################################
 # Middleware - Rack::CacheControlHeaders
@@ -140,7 +173,6 @@ Sidekiq::Web.use Rack::Auth::Basic do |username, password|
 end if ENV.fetch('RACK_ENV') == 'production'
 
 map('/sidekiq') { run Sidekiq::Web }
-
 map('/heartbeat') { run HeartbeatController }
 map('/blockchain_callback') { run BlockchainCallbackController }
 map('/api/v1/users') { run UsersController }

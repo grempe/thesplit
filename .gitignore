@@ -1,5 +1,5 @@
 /.bundle/
 /vendor/
+/log/
 .env.local
 .DS_Store
-

@@ -18,19 +18,7 @@
 #
 ###############################################################################
 
-# Load Dotenv as early in the boot process as possible
-# Top-most files override lower files
-# See : http://www.virtuouscode.com/2014/01/17/dotenv-for-multiple-environments/
-# See : https://juanitofatas.com/blog/2016/08/28/manage_your_project_s_environment_variables
-require 'dotenv'
-env = ENV.fetch('RACK_ENV') { 'development' }
-Dotenv.load(
-  File.expand_path('../../.env.local', __FILE__),
-  File.expand_path("../../.env.#{env}", __FILE__),
-  File.expand_path('../../.env', __FILE__)
-)
-
-if ENV.fetch('RACK_ENV') == 'production'
+if ENV['RACK_ENV'] == 'production'
   workers Integer(ENV.fetch('PUMA_WORKERS') { 2 })
   threads_count = Integer(ENV.fetch('PUMA_THREADS') { 4 })
 else

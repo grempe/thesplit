@@ -24,6 +24,7 @@ require 'bundler/setup'
 Bundler.require(:default)
 Bundler.require(Sinatra::Base.environment)
 
+require 'logger'
 require 'active_support/cache/redis_store'
 require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/numeric'

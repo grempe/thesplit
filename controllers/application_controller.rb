@@ -19,6 +19,21 @@
 ###############################################################################
 
 class ApplicationController < Sinatra::Base
+  #################################################
+  # Logging
+  #################################################
+
+  # See : https://spin.atomicobject.com/2013/11/12/production-logging-sinatra/
+  ::Logger.class_eval { alias :write :'<<' }
+  access_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)),'..','log','access.log')
+  access_logger = ::Logger.new(access_log)
+  error_logger = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)),'..','log','error.log'),"a+")
+  error_logger.sync = true
+
+  #################################################
+  # Includes
+  #################################################
+
   # Common JSON response format
   # http://labs.omniti.com/labs/jsend
   # https://github.com/hetznerZA/jsender
@@ -42,6 +57,8 @@ class ApplicationController < Sinatra::Base
     # Sinatra
     set :server, :puma
     set :root, "#{File.dirname(__FILE__)}/../"
+
+    use ::Rack::CommonLogger, access_logger
 
     # Content Settings
     set :site_name, ENV.fetch('SITE_NAME') { 'thesplit.is' }
@@ -163,6 +180,8 @@ class ApplicationController < Sinatra::Base
   #################################################
 
   before do
+    env['rack.errors'] = error_logger
+
     # all responses are JSON by default
     content_type :json
 

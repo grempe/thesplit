@@ -31,12 +31,11 @@ describe HeartbeatController do
     expect(last_response.status).to eq 200
     expect(last_response.headers['Content-Type']).to eq('application/json')
 
-    resp = JSON.parse(last_response.body)
-    expect(resp.keys).to eq(%w(status data))
-    expect(resp['status']).to eq('success')
-    expect(resp['data'].keys.sort).to eq(['redis_ok', 'rethinkdb_ok', 'timestamp', 'vault_ok'])
-    expect(resp['data']['redis_ok']).to eq(true)
-    expect(resp['data']['rethinkdb_ok']).to eq(true)
-    expect(resp['data']['vault_ok']).to eq(true)
+    expect(json_last_response.keys).to eq(%w(status data))
+    expect(json_last_response['status']).to eq('success')
+    expect(json_last_response['data'].keys.sort).to eq(['redis_ok', 'rethinkdb_ok', 'timestamp', 'vault_ok'])
+    expect(json_last_response['data']['redis_ok']).to eq(true)
+    expect(json_last_response['data']['rethinkdb_ok']).to eq(true)
+    expect(json_last_response['data']['vault_ok']).to eq(true)
   end
 end

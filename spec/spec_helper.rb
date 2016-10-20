@@ -24,6 +24,8 @@ require './config/boot'
 require 'rspec'
 require 'rack/test'
 
+require 'support/request_helpers'
+
 # turn loggin off in test env
 require 'sidekiq/testing'
 Sidekiq::Logging.logger = nil
@@ -45,6 +47,8 @@ end
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods
+
+  config.include Requests::JsonHelpers
 
   config.before(:each) {
     $redis.flushdb

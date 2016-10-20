@@ -47,10 +47,9 @@ describe SecretsController do
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
 
-      resp = JSON.parse(last_response.body)
-      expect(resp.keys).to eq(%w(status data))
-      expect(resp['status']).to eq('success')
-      expect(resp['data'].keys).to eq(%w(created_at expires_at))
+      expect(json_last_response.keys).to eq(%w(status data))
+      expect(json_last_response['status']).to eq('success')
+      expect(json_last_response['data'].keys).to eq(%w(created_at expires_at))
 
       expect(Vault.logical.read("secret/#{client_hash}").data[:token]).to match(/^[a-f0-9\-]+$/)
     end
@@ -83,13 +82,12 @@ describe SecretsController do
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
 
-      resp = JSON.parse(last_response.body)
-      expect(resp.keys).to eq(%w(status data))
-      expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(box_nonce box scrypt_salt created_at expires_at).sort)
-      expect(resp['data']['box_nonce']).to eq(box_nonce)
-      expect(resp['data']['box']).to eq(box)
-      expect(resp['data']['scrypt_salt']).to eq(scrypt_salt)
+      expect(json_last_response.keys).to eq(%w(status data))
+      expect(json_last_response['status']).to eq('success')
+      expect(json_last_response['data'].keys.sort).to eq(%w(box_nonce box scrypt_salt created_at expires_at).sort)
+      expect(json_last_response['data']['box_nonce']).to eq(box_nonce)
+      expect(json_last_response['data']['box']).to eq(box)
+      expect(json_last_response['data']['scrypt_salt']).to eq(scrypt_salt)
 
       expect(Vault.logical.read("secret/#{client_hash}")).to be_nil
 
@@ -143,13 +141,12 @@ describe SecretsController do
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
 
-      resp = JSON.parse(last_response.body)
-      expect(resp.keys).to eq(%w(status data))
-      expect(resp['status']).to eq('success')
-      expect(resp['data'].keys.sort).to eq(%w(confirmed hash_item receipt).sort)
-      expect(resp['data']['hash_item']).to eq(@hash_item)
-      expect(resp['data']['receipt']).to eq(@receipt)
-      expect(resp['data']['confirmed']).to eq(@t)
+      expect(json_last_response.keys).to eq(%w(status data))
+      expect(json_last_response['status']).to eq('success')
+      expect(json_last_response['data'].keys.sort).to eq(%w(confirmed hash_item receipt).sort)
+      expect(json_last_response['data']['hash_item']).to eq(@hash_item)
+      expect(json_last_response['data']['receipt']).to eq(@receipt)
+      expect(json_last_response['data']['confirmed']).to eq(@t)
     end
   end
 
@@ -175,10 +172,9 @@ describe SecretsController do
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
 
-      resp = JSON.parse(last_response.body)
-      expect(resp.keys).to eq(%w(status data))
-      expect(resp['status']).to eq('success')
-      expect(resp['data']).to be_nil
+      expect(json_last_response.keys).to eq(%w(status data))
+      expect(json_last_response['status']).to eq('success')
+      expect(json_last_response['data']).to be_nil
 
       expect(Vault.logical.read("secret/#{client_hash}")).to be_nil
     end

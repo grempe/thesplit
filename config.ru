@@ -1,6 +1,16 @@
 require './config/boot'
 
 #################################################
+# Middleware - Rack::Bounce
+#################################################
+
+# See : https://github.com/ahawkins/rack-bounce
+# reject a paths if this block returns true
+use Rack::Bounce do |request|
+  request.path =~ /^\/favicon\.?[\w]*$/
+end
+
+#################################################
 # Middleware - Compress Responses
 #################################################
 
@@ -47,7 +57,7 @@ Rack::Attack.throttle('sidekiq/req/ip', limit: 180, period: 1.minute) do |req|
 end
 
 Rack::Attack.throttle('static/req/ip', limit: 180, period: 1.minute) do |req|
-  req.ip if req.path.start_with?('/css', '/js', '/favicon.ico', '/humans.txt', '/robots.txt')
+  req.ip if req.path.start_with?('/css', '/js', '/humans.txt', '/robots.txt')
 end
 
 Rack::Attack.throttle('api/req/ip', limit: 180, period: 1.minute) do |req|

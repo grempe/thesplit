@@ -79,6 +79,8 @@ GEM
     rack (1.6.4)
     rack-attack (5.0.1)
       rack
+    rack-bounce (0.1.0)
+      rack
     rack-contrib (1.4.0)
       git-version-bump (~> 0.15)
       rack (~> 1.4)
@@ -208,6 +210,7 @@ DEPENDENCIES
   puma (~> 3.5)
   rack (~> 1.6)
   rack-attack (~> 5.0)
+  rack-bounce (~> 0.1)
   rack-contrib (~> 1.4)
   rack-cors (~> 0.4.0)
   rack-json_web_token_auth (~> 0.2.0)

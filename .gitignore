@@ -1,5 +1,6 @@
 /.bundle/
 /vendor/
 /log/
+/spec/examples.txt
 .env.local
 .DS_Store

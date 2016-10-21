@@ -20,18 +20,21 @@
 
 require 'spec_helper'
 
-describe ApplicationController do
-  def app
-    described_class
-  end
-
-  context 'GET /' do
-    it 'returns expected result' do
+RSpec.describe ApplicationController do
+  describe 'GET /' do
+    it 'returns 200' do
       get '/'
-
-      expect(last_response.headers['Content-Type']).to eq('text/html;charset=utf-8')
-      expect(last_response.body).to match(/thesplit.is/)
       expect(last_response.status).to eq 200
+    end
+
+    it 'has content type text/html' do
+      get '/'
+      expect(last_response.headers['Content-Type']).to eq('text/html;charset=utf-8')
+    end
+
+    it 'has expected body' do
+      get '/'
+      expect(last_response.body).to match(/thesplit.is/)
     end
   end
 end

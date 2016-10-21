@@ -18,20 +18,8 @@
 #
 ###############################################################################
 
-# Endpoint for browser Content Security Policy (CSP) Reports
+# Endpoint for Tierion Blockchain Subscription Callback
 class BlockchainCallbackController < ApplicationController
-  # Tierion Blockchain Subscription Callback
-  #
-  # Sample Payload
-  #
-  # {
-  #   "id"=>"57a6b24046f09ed12f13c2b6",
-  #   "merkleRoot"=>"59475c7ae20a4fadf106c8820fd36634123ca6d2c9a07fbfc1148cb850c12c93",
-  #   "transactionId"=>"609eb7df1bd56b67f7fed347c7696ce3aaa0bc0dc06b3ff3fb2fb6e22d00b1f0",
-  #   "startTimestamp"=>"2016-08-07T03:50:00.069Z",
-  #   "endTimestamp"=>"2016-08-07T04:00:00.043Z"
-  # }
-  #
   post '/' do
     param :id, String, required: true, min_length: 24, max_length: 24,
                        format: settings.hex_regex
@@ -39,8 +27,8 @@ class BlockchainCallbackController < ApplicationController
     param :merkleRoot, String, required: true, min_length: 64, max_length: 64,
                                format: settings.hex_regex
 
-    param :transactionId, String, required: true, min_length: 64, max_length: 64,
-                                  format: settings.hex_regex
+    param :transactionId, String, required: true, min_length: 64,
+                                  max_length: 64, format: settings.hex_regex
 
     param :startTimestamp, String, required: true
     param :endTimestamp, String, required: true

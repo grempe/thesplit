@@ -20,30 +20,22 @@
 
 require 'spec_helper'
 
-describe SecretsController do
-  def app
-    described_class
+RSpec.describe SecretsController do
+  let(:client_hash) { 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98' }
+  let(:box_nonce) { 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq' }
+  let(:box) { 'rBIyEoNrKTop8Capp' }
+  let(:scrypt_salt) { 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU=' }
+
+  before do
+    post '/',
+         id: client_hash,
+         box_nonce: box_nonce,
+         box: box,
+         scrypt_salt: scrypt_salt
   end
 
-  context 'POST /' do
-    before do
-      Vault.logical.delete("secret/fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98")
-    end
-
+  describe 'POST /' do
     it 'stores a secret with valid data' do
-      client_hash = 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98'
-      box_nonce = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
-      box = 'rBIyEoNrKTop8Capp/51dtAlGJs='
-      scrypt_salt = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
-
-      expect(Vault.logical.read("secret/#{client_hash}")).to be_nil
-
-      post '/',
-        id: client_hash,
-        box_nonce: box_nonce,
-        box: box,
-        scrypt_salt: scrypt_salt
-
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
 
@@ -55,25 +47,8 @@ describe SecretsController do
     end
   end
 
-  context 'GET /:id' do
-    before do
-      Vault.logical.delete("secret/fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98")
-    end
-
+  describe 'GET /:id' do
     it 'retrieves a secret' do
-      client_hash = 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98'
-      box_nonce = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
-      box = 'rBIyEoNrKTop8Capp/51dtAlGJs='
-      scrypt_salt = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
-
-      expect(Vault.logical.read("secret/#{client_hash}")).to be_nil
-
-      post '/',
-        id: client_hash,
-        box_nonce: box_nonce,
-        box: box,
-        scrypt_salt: scrypt_salt
-
       # has a one-time use token
       expect(Vault.logical.read("secret/#{client_hash}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
@@ -98,17 +73,19 @@ describe SecretsController do
     end
   end
 
-  context 'GET /:id/receipt' do
-    before do
-      @hash_item = {
+  describe 'GET /:id/receipt' do
+    let(:hash_item) do
+      {
         'receipt' => nil,
         'id' => '57b3ea8d3c6819e5786fa85a',
         'timestamp' => 1471408781,
         'hash' => '90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b'
       }
+    end
 
-      @receipt = {
-        '@context' => 'https://w3id.org/chainpoint/v2',
+    let(:receipt) do
+      {
+        '@describe' => 'https://w3id.org/chainpoint/v2',
         'type' => 'ChainpointSHA256v2',
         'targetHash' => '90ea37fa715946b924ef8b0b0610a6153e2e2d3d895c241336f6be925f40347b',
         'merkleRoot' => '43425e5816b19992f98e7650f66485218eeb105b881da78432e703684c32a4c3',
@@ -122,49 +99,36 @@ describe SecretsController do
           }
         ]
       }
-
-      @client_hash = 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98'
-      @t = '2016-09-30T18:03:16Z'
     end
+
+    let(:client_hash) { 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98' }
+    let(:t) { '2016-09-30T18:03:16Z' }
 
     it 'retrieves a receipt' do
       app.settings.r.connect(app.settings.rdb_config) do |conn|
         app.settings.r.table('blockchain').insert(
-          id: @client_hash,
-          hash_item: @hash_item,
-          receipt: @receipt,
-          confirmed: @t
+          id: client_hash,
+          hash_item: hash_item,
+          receipt: receipt,
+          confirmed: t
         ).run(conn)
       end
 
-      get "/#{@client_hash}/receipt"
+      get "/#{client_hash}/receipt"
       expect(last_response.status).to eq 200
       expect(last_response.headers['Content-Type']).to eq('application/json')
 
       expect(json_last_response.keys).to eq(%w(status data))
       expect(json_last_response['status']).to eq('success')
       expect(json_last_response['data'].keys.sort).to eq(%w(confirmed hash_item receipt).sort)
-      expect(json_last_response['data']['hash_item']).to eq(@hash_item)
-      expect(json_last_response['data']['receipt']).to eq(@receipt)
-      expect(json_last_response['data']['confirmed']).to eq(@t)
+      expect(json_last_response['data']['hash_item']).to eq(hash_item)
+      expect(json_last_response['data']['receipt']).to eq(receipt)
+      expect(json_last_response['data']['confirmed']).to eq(t)
     end
   end
 
-  context 'DELETE /:id' do
+  describe 'DELETE /:id' do
     it 'deletes a secret' do
-      client_hash = 'fc3791ef66c25914a0cb9a32c2debf8d4cc7bd7d0b6545ec50750c0b3bb68f98'
-      box_nonce = 'LkekKSqdi93MfGE3Ti3LsJaVzziTFWLq'
-      box = 'rBIyEoNrKTop8Capp/51dtAlGJs='
-      scrypt_salt = 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU='
-
-      expect(Vault.logical.read("secret/#{client_hash}")).to be_nil
-
-      post '/',
-           id: client_hash,
-           box_nonce: box_nonce,
-           box: box,
-           scrypt_salt: scrypt_salt
-
       expect(Vault.logical.read("secret/#{client_hash}").data[:token]).to match(/^[a-f0-9\-]+$/)
 
       delete "/#{client_hash}"

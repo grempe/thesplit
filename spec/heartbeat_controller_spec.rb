@@ -20,22 +20,27 @@
 
 require 'spec_helper'
 
-describe HeartbeatController do
-  def app
-    described_class
-  end
+RSpec.describe HeartbeatController do
+  describe 'GET /heartbeat' do
+    context 'with no params' do
+      it 'returns 200' do
+        get '/'
+        expect(last_response.status).to eq 200
+      end
 
-  it 'retrieves a heartbeat' do
-    get '/'
+      it 'has proper content type' do
+        get '/'
+        expect(last_response.headers['Content-Type']).to eq('application/json')
+      end
 
-    expect(last_response.status).to eq 200
-    expect(last_response.headers['Content-Type']).to eq('application/json')
-
-    expect(json_last_response.keys).to eq(%w(status data))
-    expect(json_last_response['status']).to eq('success')
-    expect(json_last_response['data'].keys.sort).to eq(['redis_ok', 'rethinkdb_ok', 'timestamp', 'vault_ok'])
-    expect(json_last_response['data']['redis_ok']).to eq(true)
-    expect(json_last_response['data']['rethinkdb_ok']).to eq(true)
-    expect(json_last_response['data']['vault_ok']).to eq(true)
+      it 'has expected response' do
+        get '/'
+        expect(json_last_response['status']).to eq('success')
+        expect(json_last_response['data']['redis_ok']).to be true
+        expect(json_last_response['data']['rethinkdb_ok']).to be true
+        expect(json_last_response['data']['vault_ok']).to be true
+        expect(json_last_response['data']['timestamp']).to be_present
+      end
+    end
   end
 end

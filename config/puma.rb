@@ -19,8 +19,8 @@
 ###############################################################################
 
 if ENV['RACK_ENV'] == 'production'
-  workers Integer(ENV.fetch('PUMA_WORKERS') { 2 })
-  threads_count = Integer(ENV.fetch('PUMA_THREADS') { 4 })
+  workers Integer(ENV.fetch('PUMA_WORKERS') { 1 })
+  threads_count = Integer(ENV.fetch('PUMA_THREADS') { 5 })
 else
   workers 1
   threads_count = 1

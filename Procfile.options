@@ -2,3 +2,8 @@ app_name: thesplit.is
 
 env:
   RACK_ENV: production
+
+processes:
+  web:
+    restart_mode: usr1
+    term_signal: INT

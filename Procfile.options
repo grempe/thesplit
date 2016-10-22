@@ -5,5 +5,5 @@ env:
 
 processes:
   web:
-    restart_mode: INT
+    restart_mode: term-start
     term_signal: INT

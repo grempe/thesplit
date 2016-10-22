@@ -1,0 +1,4 @@
+app_name: thesplit.is
+
+env:
+  RACK_ENV: production

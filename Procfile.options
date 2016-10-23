@@ -1,9 +1,0 @@
-app_name: thesplit.is
-
-env:
-  RACK_ENV: production
-
-processes:
-  web:
-    restart_mode: term-start
-    term_signal: INT

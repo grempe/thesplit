@@ -3,6 +3,7 @@
 /log/
 /spec/examples.txt
 .env.local
+.env.production
 .DS_Store
 procodile.log
 Procfile.local

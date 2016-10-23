@@ -1,6 +1,8 @@
 /.bundle/
 /vendor/
 /log/
+/bin/
+/pids/
 /spec/examples.txt
 .env.local
 .env.production

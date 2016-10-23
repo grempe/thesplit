@@ -19,7 +19,7 @@
 ###############################################################################
 
 if ENV['RACK_ENV'] == 'production'
-  workers Integer(ENV.fetch('PUMA_WORKERS') { 1 })
+  workers Integer(ENV.fetch('PUMA_WORKERS') { 2 })
   threads_count = Integer(ENV.fetch('PUMA_THREADS') { 5 })
 else
   workers 1
@@ -32,7 +32,7 @@ preload_app!
 
 rackup      DefaultRackup
 port        ENV.fetch('PORT') { 3000 }
-environment ENV.fetch('RACK_ENV') { 'development' }
+environment ENV.fetch('RACK_ENV') { 'production' }
 
 on_worker_boot do
   # Do Something Here

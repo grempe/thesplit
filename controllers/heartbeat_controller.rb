@@ -61,13 +61,13 @@ class HeartbeatController < ApplicationController
     # string, and not parsing json. This single string reflects
     # overall service health.
     if redis_ok && rethinkdb_ok && vault_ok
-      overall = 'all_services_ok'
+      required_services = 'online'
     else
-      overall = 'services_down'
+      required_services = 'offline'
     end
 
     resp = {
-      overall: overall,
+      required_services: required_services,
       redis_ok: redis_ok,
       rethinkdb_ok: rethinkdb_ok,
       vault_ok: vault_ok,

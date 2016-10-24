@@ -35,6 +35,7 @@ gem 'rethinkdb', '~> 2.3'
 gem 'sirp', '~> 2.0.0'
 gem 'tss', '~> 0.4.2'
 gem 'uuidtools', '~> 2.1.5'
+gem 'foreman', '~> 0.82'
 
 group :test, :development do
   gem 'rake'

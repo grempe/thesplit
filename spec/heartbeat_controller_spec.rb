@@ -36,6 +36,7 @@ RSpec.describe HeartbeatController do
       it 'has expected response' do
         get '/'
         expect(json_last_response['status']).to eq('success')
+        expect(json_last_response['data']['overall']).to eq('all_services_ok')
         expect(json_last_response['data']['redis_ok']).to be true
         expect(json_last_response['data']['rethinkdb_ok']).to be true
         expect(json_last_response['data']['vault_ok']).to be true

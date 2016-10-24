@@ -57,7 +57,17 @@ class HeartbeatController < ApplicationController
       vault_ok = false
     end
 
+    # some uptime monitors only allow testing for a single
+    # string, and not parsing json. This single string reflects
+    # overall service health.
+    if redis_ok && rethinkdb_ok && vault_ok
+      overall = 'all_services_ok'
+    else
+      overall = 'services_down'
+    end
+
     resp = {
+      overall: overall,
       redis_ok: redis_ok,
       rethinkdb_ok: rethinkdb_ok,
       vault_ok: vault_ok,

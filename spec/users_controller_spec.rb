@@ -221,7 +221,7 @@ RSpec.describe UsersController do
   end
 
   context 'GET /:id' do
-    before do
+    before(:each) do
       post '/', user
     end
 

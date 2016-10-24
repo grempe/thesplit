@@ -26,7 +26,7 @@ require 'rack/test'
 
 require 'support/request_helpers'
 
-# turn loggin off in test env
+# turn logging off in test env
 require 'sidekiq/testing'
 Sidekiq::Logging.logger = nil
 

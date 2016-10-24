@@ -26,7 +26,7 @@ RSpec.describe SecretsController do
   let(:box) { 'rBIyEoNrKTop8Capp' }
   let(:scrypt_salt) { 'n1AvpGTPOhP3OWbKmS87NFVtij7Ner2NvqnRymioDWU=' }
 
-  before do
+  before(:each) do
     post '/',
          id: client_hash,
          box_nonce: box_nonce,

@@ -21,14 +21,19 @@
 class HeartbeatController < ApplicationController
   get '/' do
     begin
+      redis_start_time = Time.now.utc
       $redis.set('heartbeat', 'ok')
       $redis.expire('heatbeat', 2)
       redis_ok = $redis.get('heartbeat').present? ? true : false
     rescue StandardError
       redis_ok = false
+    ensure
+      redis_ms = Time.now.utc - redis_start_time
     end
 
     begin
+      rethinkdb_start_time = Time.now.utc
+
       settings.r.connect(settings.rdb_config) do |conn|
         settings.r.table('heartbeat').insert(
           id: '999',
@@ -47,14 +52,19 @@ class HeartbeatController < ApplicationController
       rethinkdb_ok = rethinkdb_resp['heartbeat'] == 'ok' ? true : false
     rescue StandardError
       rethinkdb_ok = false
+    ensure
+      rethinkdb_ms = Time.now.utc - rethinkdb_start_time
     end
 
     begin
+      vault_start_time = Time.now.utc
       Vault.logical.write('secret/heartbeat', ok: true)
       vault_ok = Vault.logical.read('secret/heartbeat').present? ? true : false
       Vault.logical.delete('secret/heartbeat')
     rescue StandardError
       vault_ok = false
+    ensure
+      vault_ms = Time.now.utc - vault_start_time
     end
 
     # some uptime monitors only allow testing for a single
@@ -69,8 +79,11 @@ class HeartbeatController < ApplicationController
     resp = {
       required_services: required_services,
       redis_ok: redis_ok,
+      redis_ms: redis_ms,
       rethinkdb_ok: rethinkdb_ok,
+      rethinkdb_ms: rethinkdb_ms,
       vault_ok: vault_ok,
+      vault_ms: vault_ms,
       timestamp: Time.now.utc.iso8601
     }
 

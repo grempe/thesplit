@@ -38,8 +38,11 @@ RSpec.describe HeartbeatController do
         expect(json_last_response['status']).to eq('success')
         expect(json_last_response['data']['required_services']).to eq('online')
         expect(json_last_response['data']['redis_ok']).to be true
+        expect(json_last_response['data']['redis_ms']).to be < 1.0
         expect(json_last_response['data']['rethinkdb_ok']).to be true
+        expect(json_last_response['data']['rethinkdb_ms']).to be < 1.0
         expect(json_last_response['data']['vault_ok']).to be true
+        expect(json_last_response['data']['vault_ms']).to be < 1.0
         expect(json_last_response['data']['timestamp']).to be_present
       end
     end

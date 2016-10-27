@@ -147,11 +147,6 @@ workers Integer(ENV.fetch('PUMA_WORKERS') { 2 })
 #   puts "Starting workers..."
 # end
 
-before_fork do
-  require 'puma_worker_killer'
-  PumaWorkerKiller.enable_rolling_restart # Default is every 6 hours
-end
-
 # Code to run in a worker before it starts serving requests.
 #
 # This is called everytime a worker is to be started.

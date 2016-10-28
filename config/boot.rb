@@ -63,3 +63,33 @@ end
 
 # Security : scrub additional fields from Rollbar logs
 Rollbar.configuration.scrub_fields |= [:boxNonceB64, :boxB64, :scryptSaltB64]
+
+Vault.configure do |config|
+  # The address of the Vault server, also read as ENV["VAULT_ADDR"]
+  config.address = ENV.fetch('VAULT_ADDR')
+
+  # The token to authenticate with Vault, also read as ENV["VAULT_TOKEN"]
+  config.token = ENV.fetch('VAULT_TOKEN')
+
+  # Proxy connection information, also read as ENV["VAULT_PROXY_(thing)"]
+  # config.proxy_address  = "..."
+  # config.proxy_port     = "..."
+  # config.proxy_username = "..."
+  # config.proxy_password = "..."
+
+  # Custom SSL PEM, also read as ENV["VAULT_SSL_CERT"]
+  # config.ssl_pem_file = "/path/on/disk.pem"
+
+  # Use SSL verification, also read as ENV["VAULT_SSL_VERIFY"]
+  config.ssl_verify = ENV.fetch('VAULT_SSL_VERIFY') { false }
+
+  # Timeout the connection after a certain amount of time (seconds), also read
+  # as ENV["VAULT_TIMEOUT"]
+  config.timeout = ENV.fetch('VAULT_TIMEOUT') { 30 }
+
+  # It is also possible to have finer-grained controls over the timeouts, these
+  # may also be read as environment variables
+  # config.ssl_timeout  = 5
+  # config.open_timeout = 5
+  # config.read_timeout = 30
+end

@@ -34,11 +34,12 @@ class HeartbeatController < ApplicationController
     begin
       rethinkdb_start_time = Time.now.utc
 
+      # soft durability doesn't wait for write to disk
       settings.r.connect(settings.rdb_config) do |conn|
         settings.r.table('heartbeat').insert(
           id: '999',
           heartbeat: 'ok'
-        ).run(conn)
+        ).run(conn, durability: 'soft')
       end
 
       rethinkdb_resp = settings.r.connect(settings.rdb_config) do |conn|
@@ -46,7 +47,7 @@ class HeartbeatController < ApplicationController
       end
 
       settings.r.connect(settings.rdb_config) do |conn|
-        settings.r.table('heartbeat').get('999').delete().run(conn)
+        settings.r.table('heartbeat').get('999').delete().run(conn, durability: 'soft')
       end
 
       rethinkdb_ok = rethinkdb_resp['heartbeat'] == 'ok' ? true : false

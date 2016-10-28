@@ -16,4 +16,4 @@
 #
 
 web: bundle exec puma -e $RACK_ENV -p 5000 -C config/puma.rb
-worker: bundle exec sidekiq -c 5 -v -r './config/sidekiq_boot.rb'
+worker: bundle exec sidekiq -c 3 -v -r './config/sidekiq_boot.rb'

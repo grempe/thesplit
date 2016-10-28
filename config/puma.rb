@@ -92,7 +92,7 @@ state_path '/tmp/.puma.state'
 #
 # threads 0, 16
 
-threads 0, Integer(ENV.fetch('PUMA_THREADS') { 16 })
+threads 0, Integer(ENV.fetch('PUMA_THREADS') { 3 })
 
 # Bind the server to "url". "tcp://", "unix://" and "ssl://" are the only
 # accepted protocols.

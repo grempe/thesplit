@@ -119,6 +119,37 @@ end
 
 
 #################################################
+# Middleware - Rack::ContentSecurityPolicy
+#################################################
+
+Rack::ContentSecurityPolicy.configure do |d|
+  d.report_only = ENV.fetch('RACK_ENV') != 'production'
+  d['default-src'] = "'none'"
+  d['script-src']  = "'self' 'unsafe-eval'"
+
+  if ENV.fetch('RACK_ENV') == 'production'
+    d['connect-src'] = "'self' https://thesplit.is"
+    d['report-uri'] = "https://grempe.report-uri.io/r/default/csp/enforce"
+    d['upgrade-insecure-requests'] = true
+    d['block-all-mixed-content'] = true
+    d['upgrade-insecure-requests'] = true
+  else
+    d['connect-src'] = "'self' http://0.0.0.0:3000 http://127.0.0.1:3000"
+    d['report-uri'] = "https://grempe.report-uri.io/r/default/csp/reportOnly"
+  end
+
+  d['img-src'] = "'self'"
+  d['style-src'] = "'self' 'unsafe-inline' https: maxcdn.bootstrapcdn.com"
+  d['font-src'] = "'self' https: *.bootstrapcdn.com"
+  d['frame-ancestors'] = "'none'"
+  d['form-action'] = "'self'"
+  d['referrer'] = "no-referrer"
+  d['require-sri-for'] = "script style"
+end
+
+use Rack::ContentSecurityPolicy
+
+#################################################
 # Middleware - Rack::CacheControlHeaders
 #################################################
 
@@ -163,7 +194,6 @@ use Rack::CacheControlHeaders, '/api'
 
 use ::Rack::NestedParams
 use ::Rack::PostBodyContentTypeParser
-
 
 #################################################
 # Middleware - Rollbar Exception Logging

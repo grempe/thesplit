@@ -151,11 +151,6 @@ class ApplicationController < Sinatra::Base
         puts "#{e.class} : #{e.message}"
       end
     end
-
-    # Content Security Policy (CSP)
-    set :csp_enabled, true
-    # CSP : If true, only report, don't actually enforce in the browser
-    set :csp_report_only, false
   end
 
   configure :production, :development do
@@ -178,39 +173,6 @@ class ApplicationController < Sinatra::Base
     last_modified settings.start_time
     etag settings.start_time.to_s
     expires 1.hour, :public, s_maxage: 24.hours
-
-    # Content Security Policy
-    # https://content-security-policy.com
-    if settings.csp_enabled?
-      csp = []
-      csp << "default-src 'none'"
-      csp << "script-src 'self' 'unsafe-eval'"
-
-      if settings.production?
-        csp << "connect-src 'self' https://thesplit.is"
-      else
-        csp << "connect-src 'self' http://0.0.0.0:3000 http://127.0.0.1:3000"
-      end
-
-      csp << "img-src 'self'"
-      csp << "style-src 'self' 'unsafe-inline' https: maxcdn.bootstrapcdn.com"
-      csp << "font-src 'self' https: *.bootstrapcdn.com"
-      csp << "frame-ancestors 'none'"
-      csp << "form-action 'self'"
-      csp << 'upgrade-insecure-requests' if settings.production?
-      csp << 'block-all-mixed-content' if settings.production?
-      csp << 'referrer no-referrer'
-
-      if settings.csp_report_only?
-        csp << 'report-uri https://grempe.report-uri.io/r/default/csp/reportOnly'
-        header = 'Content-Security-Policy-Report-Only'
-      else
-        csp << 'report-uri https://grempe.report-uri.io/r/default/csp/enforce'
-        header = 'Content-Security-Policy'
-      end
-
-      response.headers[header] = csp.join(';')
-    end
 
     # Add headers for all unthrottled requests also
     # See Rack::Attack in config.ru

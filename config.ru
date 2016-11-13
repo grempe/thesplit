@@ -64,7 +64,7 @@ Rack::Attack.throttle('api/req/ip', limit: 180, period: 1.minute) do |req|
   req.ip if req.path.start_with?('/api')
 end
 
-Rack::Attack.throttle('heartbeat/req/ip', limit: 10, period: 1.minute) do |req|
+Rack::Attack.throttle('heartbeat/req/ip', limit: 100, period: 1.minute) do |req|
   req.ip if req.path.start_with?('/heartbeat')
 end
 

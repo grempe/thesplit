@@ -83,7 +83,7 @@ GEM
       rack
     rack-bounce (0.1.0)
       rack
-    rack-content_security_policy (0.1.1)
+    rack-content_security_policy (0.1.2)
       contracts (~> 0.14)
       rack
     rack-contrib (1.4.0)
@@ -217,7 +217,7 @@ DEPENDENCIES
   rack (~> 1.6)
   rack-attack (~> 5.0)
   rack-bounce (~> 0.1)
-  rack-content_security_policy (~> 0.1.1)
+  rack-content_security_policy (~> 0.1.2)
   rack-contrib (~> 1.4)
   rack-cors (~> 0.4.0)
   rack-json_web_token_auth (~> 0.2.0)

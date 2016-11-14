@@ -19,13 +19,15 @@ end
 # Cache-Control response is set in the headers
 
 # To test this is working you need to use the
-# right curl invocation:
-# curl -i --head "Accept-Encoding: gzip,deflate" http://localhost:3000
+# proper curl invocation:
+# curl -I -H "Accept-Encoding: gzip,deflate" http://0.0.0.0:3000
 
-# Only if body size is large enough
-# See : http://perlkour.pl/2015/09/rack-deflater-in-sinatra/
-use Rack::Deflater, :if => lambda {
-  |env, status, headers, body| body.length > 512
+# Only apply deflate if the lambda returns true
+use Rack::Deflater, :if => lambda { |env, status, headers, body|
+  body &&
+  body.is_a?(Rack::File) ||
+  body.is_a?(Rack::BodyProxy) ||
+  (body.respond_to?(:length) && body.length > 512)
 }
 
 #################################################

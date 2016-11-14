@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/grempe/rack-content_security_policy.git
+  revision: 7bf0591c47b4c60695731af986e5f45b822b225a
+  specs:
+    rack-content_security_policy (0.1.0)
+      contracts (~> 0.14)
+      rack
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -82,9 +90,6 @@ GEM
     rack-attack (5.0.1)
       rack
     rack-bounce (0.1.0)
-      rack
-    rack-content_security_policy (0.1.0)
-      contracts (~> 0.14)
       rack
     rack-contrib (1.4.0)
       git-version-bump (~> 0.15)
@@ -217,7 +222,7 @@ DEPENDENCIES
   rack (~> 1.6)
   rack-attack (~> 5.0)
   rack-bounce (~> 0.1)
-  rack-content_security_policy (~> 0.1.0)
+  rack-content_security_policy (~> 0.1.0)!
   rack-contrib (~> 1.4)
   rack-cors (~> 0.4.0)
   rack-json_web_token_auth (~> 0.2.0)
